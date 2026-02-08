@@ -47,12 +47,12 @@ function App() {
   const totalVisits = visits.length;
 
   const topBreweries = useMemo(
-    () => getTopBreweries(breweryStats, 10),
+    () => getTopBreweries(breweryStats, 25),
     [breweryStats]
   );
 
   const bottomBreweries = useMemo(
-    () => getBottomBreweries(breweryStats, 10),
+    () => getBottomBreweries(breweryStats, 25),
     [breweryStats]
   );
 
@@ -61,9 +61,9 @@ function App() {
                              [...breweryStats].sort((a, b) => b.visitCount - a.visitCount);
   
   const listTitle = viewMode === 'top' 
-    ? 'Top 10 Visited' 
+    ? 'Top 25 Visited' 
     : viewMode === 'bottom'
-    ? 'Bottom 10 Visited*'
+    ? 'Bottom 25 Visited*'
     : 'All Breweries';
 
 
@@ -136,8 +136,8 @@ function App() {
               <div className="flex-1">
                 <ToggleButton
                   options={[
-                    { label: 'Top 10', value: 'top', icon: TrendingUp },
-                    { label: 'Bottom 10*', value: 'bottom', icon: TrendingDown },
+                    { label: 'Top 25', value: 'top', icon: TrendingUp },
+                    { label: 'Bottom 25*', value: 'bottom', icon: TrendingDown },
                     { label: 'All', value: 'all', icon: List }
                   ]}
                   selected={viewMode}
