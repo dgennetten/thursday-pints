@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Visit } from './types';
-import { processVisits, getTopBreweries, getBottomBreweries } from './utils';
+import { processVisits } from './utils';
 import StatsCard from './components/StatsCard';
 import BreweryList from './components/BreweryList';
 import VisitList from './components/VisitList';
