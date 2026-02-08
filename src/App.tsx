@@ -6,10 +6,10 @@ import BreweryList from './components/BreweryList';
 import VisitList from './components/VisitList';
 import ToggleButton from './components/ToggleButton';
 import BreweryMap from './components/BreweryMap';
-import { Beer, MapPin, RefreshCw, TrendingUp, TrendingDown, List, Map } from 'lucide-react';
+import { Beer, MapPin, RefreshCw, TrendingUp, TrendingDown, Route, Building2, Map } from 'lucide-react';
 import { loadVisitsFromPublicJSON } from './services/spreadsheetService';
 
-type ViewMode = 'top' | 'bottom' | 'all';
+type ViewMode = 'top' | 'bottom' | 'tour' | 'breweries';
 
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('top');
@@ -58,12 +58,20 @@ function App() {
 
   const displayedBreweries = viewMode === 'top' ? topBreweries : 
                              viewMode === 'bottom' ? bottomBreweries : 
-                             [...breweryStats].sort((a, b) => b.visitCount - a.visitCount);
+                             viewMode === 'breweries'
+                             ? [...breweryStats].sort((a, b) => {
+                                 const dateA = new Date(a.lastVisitDate).getTime();
+                                 const dateB = new Date(b.lastVisitDate).getTime();
+                                 return dateB - dateA; // Newest first
+                               })
+                             : [...breweryStats].sort((a, b) => b.visitCount - a.visitCount);
   
   const listTitle = viewMode === 'top' 
     ? 'Top 25 Visited' 
     : viewMode === 'bottom'
     ? 'Bottom 25 Visited*'
+    : viewMode === 'breweries'
+    ? 'Breweries by Last Visit'
     : 'All Breweries';
 
 
@@ -138,7 +146,8 @@ function App() {
                   options={[
                     { label: 'Top 25', value: 'top', icon: TrendingUp },
                     { label: 'Bottom 25*', value: 'bottom', icon: TrendingDown },
-                    { label: 'All', value: 'all', icon: List }
+                    { label: 'Tour', value: 'tour', icon: Route },
+                    { label: 'Breweries', value: 'breweries', icon: Building2 }
                   ]}
                   selected={viewMode}
                   onChange={(value) => setViewMode(value as ViewMode)}
@@ -168,10 +177,10 @@ function App() {
             <div className={`grid gap-6 ${showMap ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
               {/* List */}
               <div>
-                {viewMode === 'all' ? (
+                {viewMode === 'tour' ? (
                   <VisitList
                     visits={visits}
-                    title="All Visits"
+                    title="Tour"
                   />
                 ) : (
                   <BreweryList
@@ -185,7 +194,7 @@ function App() {
               {isLocalhost && showMap && (
                 <div className="h-[500px] md:h-[600px]">
                   <BreweryMap
-                    breweries={viewMode === 'all' 
+                    breweries={viewMode === 'tour' 
                       ? breweryStats.sort((a, b) => b.visitCount - a.visitCount)
                       : displayedBreweries
                     }
