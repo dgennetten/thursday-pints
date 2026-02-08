@@ -143,13 +143,13 @@ function App() {
               {isLocalhost && (
                 <button
                   onClick={() => setShowMap(!showMap)}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 text-lg font-medium rounded-lg transition-colors ${
                     showMap
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  <Map className="w-4 h-4" />
+                  <Map className="w-6 h-6" />
                   Map
                 </button>
               )}

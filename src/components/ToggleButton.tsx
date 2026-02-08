@@ -15,13 +15,13 @@ export default function ToggleButton({ options, selected, onChange }: ToggleButt
           <button
             key={option.value}
             onClick={() => onChange(option.value)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
+            className={`px-4 py-2 text-lg font-medium rounded-md transition-colors flex items-center gap-2 ${
               selected === option.value
                 ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            {Icon && <Icon className="w-4 h-4" />}
+            {Icon && <Icon className="w-6 h-6" />}
             {option.label}
           </button>
         );
