@@ -1,0 +1,810 @@
+[
+  {
+    "date": "2026-01-29",
+    "breweryName": "Loveland Ale Works"
+  },
+  {
+    "date": "2026-01-22",
+    "breweryName": "CooperSmith's Pub & Brewing"
+  },
+  {
+    "date": "2026-01-15",
+    "breweryName": "Rally King Brewery"
+  },
+  {
+    "date": "2026-01-08",
+    "breweryName": "Berthoud Brewing"
+  },
+  {
+    "date": "2025-12-30",
+    "breweryName": "Maxline Brewing"
+  },
+  {
+    "date": "2025-12-23",
+    "breweryName": "Equinox Brewery"
+  },
+  {
+    "date": "2025-12-18",
+    "breweryName": "New Belgium Brewing"
+  },
+  {
+    "date": "2025-12-11",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2025-12-04",
+    "breweryName": "Crooked Beech Brewing"
+  },
+  {
+    "date": "2025-11-25",
+    "breweryName": "Tap And Handle"
+  },
+  {
+    "date": "2025-11-20",
+    "breweryName": "City Star Brewing"
+  },
+  {
+    "date": "2025-11-13",
+    "breweryName": "Salt Road Brewery"
+  },
+  {
+    "date": "2025-11-06",
+    "breweryName": "Horse and Dragon Brewery"
+  },
+  {
+    "date": "2025-10-30",
+    "breweryName": "Funkwerks Brewery",
+    "isClosed": true
+  },
+  {
+    "date": "2025-10-23",
+    "breweryName": "Equinox Brewery"
+  },
+  {
+    "date": "2025-10-16",
+    "breweryName": "Hello Brewery"
+  },
+  {
+    "date": "2025-10-09",
+    "breweryName": "Timnath Beerwerks"
+  },
+  {
+    "date": "2025-10-02",
+    "breweryName": "Purpose Brewing and Cellars"
+  },
+  {
+    "date": "2025-09-25",
+    "breweryName": "Mash Lab Brewing"
+  },
+  {
+    "date": "2025-09-18",
+    "breweryName": "Stodgy Brewing"
+  },
+  {
+    "date": "2025-09-11",
+    "breweryName": "Fennelly Bar and Grill"
+  },
+  {
+    "date": "2025-09-04",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2025-08-28",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2025-08-21",
+    "breweryName": "Prost Brewing"
+  },
+  {
+    "date": "2025-08-14",
+    "breweryName": "Funkwerks Brewery",
+    "isClosed": true
+  },
+  {
+    "date": "2025-08-07",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2025-07-31",
+    "breweryName": "Rally King Brewery"
+  },
+  {
+    "date": "2025-07-24",
+    "breweryName": "Mythmaker Brewing"
+  },
+  {
+    "date": "2025-07-17",
+    "breweryName": "Timnath Beerwerks North"
+  },
+  {
+    "date": "2025-07-10",
+    "breweryName": "Horse and Dragon Brewery"
+  },
+  {
+    "date": "2025-07-03",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2025-06-26",
+    "breweryName": "Gilded Goat Taproom"
+  },
+  {
+    "date": "2025-06-19",
+    "breweryName": "Odell Brewing Co."
+  },
+  {
+    "date": "2025-06-12",
+    "breweryName": "Stodgy Brewing"
+  },
+  {
+    "date": "2025-06-05",
+    "breweryName": "Loveland Ale Works"
+  },
+  {
+    "date": "2025-05-29",
+    "breweryName": "Verboten North Brewpub"
+  },
+  {
+    "date": "2025-05-22",
+    "breweryName": "Prost Brewing"
+  },
+  {
+    "date": "2025-05-15",
+    "breweryName": "Intersect Brewing"
+  },
+  {
+    "date": "2025-05-08",
+    "breweryName": "Peculier Brewing"
+  },
+  {
+    "date": "2025-05-01",
+    "breweryName": "Breckenridge Brewery"
+  },
+  {
+    "date": "2025-04-24",
+    "breweryName": "Equinox Brewery"
+  },
+  {
+    "date": "2025-04-17",
+    "breweryName": "Mighty River Brewing"
+  },
+  {
+    "date": "2025-04-10",
+    "breweryName": "Grimm Brothers Brewing"
+  },
+  {
+    "date": "2025-04-03",
+    "breweryName": "Funkwerks Brewery",
+    "isClosed": true
+  },
+  {
+    "date": "2025-03-27",
+    "breweryName": "BJ's Restaurant & Brewhouse"
+  },
+  {
+    "date": "2025-03-20",
+    "breweryName": "City Star Brewing"
+  },
+  {
+    "date": "2025-03-13",
+    "breweryName": "Timnath Beerwerks"
+  },
+  {
+    "date": "2025-03-06",
+    "breweryName": "Mythmaker Brewing"
+  },
+  {
+    "date": "2025-02-27",
+    "breweryName": "Salt Road Brewery"
+  },
+  {
+    "date": "2025-02-20",
+    "breweryName": "Horse and Dragon Brewery"
+  },
+  {
+    "date": "2025-02-13",
+    "breweryName": "Rule105 Brewing"
+  },
+  {
+    "date": "2025-02-06",
+    "breweryName": "New Belgium Brewing"
+  },
+  {
+    "date": "2025-01-30",
+    "breweryName": "Bootstrap Brewing"
+  },
+  {
+    "date": "2025-01-23",
+    "breweryName": "Stodgy Brewing"
+  },
+  {
+    "date": "2025-01-16",
+    "breweryName": "Berthoud Brewing"
+  },
+  {
+    "date": "2025-01-09",
+    "breweryName": "Gilded Goat Brewing Co."
+  },
+  {
+    "date": "2025-01-02",
+    "breweryName": "Verboten North Brewpub"
+  },
+  {
+    "date": "2024-12-26",
+    "breweryName": "Timnath Beerwerks"
+  },
+  {
+    "date": "2024-12-19",
+    "breweryName": "Loveland Ale Works"
+  },
+  {
+    "date": "2024-12-12",
+    "breweryName": "Tightknit Brewing"
+  },
+  {
+    "date": "2024-12-05",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2024-11-26",
+    "breweryName": "Tap And Handle"
+  },
+  {
+    "date": "2024-11-21",
+    "breweryName": "Prost Brewing"
+  },
+  {
+    "date": "2024-11-14",
+    "breweryName": "Jessup Farm Barrel House"
+  },
+  {
+    "date": "2024-11-07",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2024-10-31",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2024-10-24",
+    "breweryName": "Timnath Beerwerks North"
+  },
+  {
+    "date": "2024-10-17",
+    "breweryName": "Equinox Brewery"
+  },
+  {
+    "date": "2024-10-10",
+    "breweryName": "Horse and Dragon Brewery"
+  },
+  {
+    "date": "2024-10-03",
+    "breweryName": "Mythmaker Brewing"
+  },
+  {
+    "date": "2024-09-26",
+    "breweryName": "Loveland Ale Works"
+  },
+  {
+    "date": "2024-09-19",
+    "breweryName": "Stodgy Brewing"
+  },
+  {
+    "date": "2024-09-12",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2024-09-05",
+    "breweryName": "Sky Bear Brewery"
+  },
+  {
+    "date": "2024-08-29",
+    "breweryName": "Grimm Brothers Brewing"
+  },
+  {
+    "date": "2024-08-22",
+    "breweryName": "Breckenridge Brewery"
+  },
+  {
+    "date": "2024-08-15",
+    "breweryName": "Oscar Blues"
+  },
+  {
+    "date": "2024-08-08",
+    "breweryName": "New Belgium Brewing"
+  },
+  {
+    "date": "2024-07-25",
+    "breweryName": "Stodgy Brewing"
+  },
+  {
+    "date": "2024-07-18",
+    "breweryName": "Maxline Brewing"
+  },
+  {
+    "date": "2024-07-11",
+    "breweryName": "Konstruct Brewing",
+    "isClosed": true
+  },
+  {
+    "date": "2024-07-03",
+    "breweryName": "Timnath Beerwerks"
+  },
+  {
+    "date": "2024-06-20",
+    "breweryName": "Odell Brewing Co."
+  },
+  {
+    "date": "2024-06-13",
+    "breweryName": "Verboten North Brewpub"
+  },
+  {
+    "date": "2024-06-06",
+    "breweryName": "Fennelly Bar and Grill"
+  },
+  {
+    "date": "2024-05-30",
+    "breweryName": "Sweetwater Brewing",
+    "isClosed": true
+  },
+  {
+    "date": "2024-05-23",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2024-05-16",
+    "breweryName": "Left Hand Brewing"
+  },
+  {
+    "date": "2024-05-09",
+    "breweryName": "Jessup Farm Barrel House"
+  },
+  {
+    "date": "2024-05-02",
+    "breweryName": "Verboten North Brewpub"
+  },
+  {
+    "date": "2024-04-25",
+    "breweryName": "City Star Brewing"
+  },
+  {
+    "date": "2024-04-18",
+    "breweryName": "Horse and Dragon Brewery"
+  },
+  {
+    "date": "2024-04-11",
+    "breweryName": "Funkwerks Brewery",
+    "isClosed": true
+  },
+  {
+    "date": "2024-04-04",
+    "breweryName": "Gilded Goat Taproom"
+  },
+  {
+    "date": "2024-03-28",
+    "breweryName": "Mayor of Old Town"
+  },
+  {
+    "date": "2024-03-21",
+    "breweryName": "Prost Brewing"
+  },
+  {
+    "date": "2024-03-14",
+    "breweryName": "Purpose Brewing and Cellars"
+  },
+  {
+    "date": "2024-03-07",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2024-02-29",
+    "breweryName": "Stodgy Brewing"
+  },
+  {
+    "date": "2024-02-22",
+    "breweryName": "Hello Brewery"
+  },
+  {
+    "date": "2024-02-15",
+    "breweryName": "Berthoud Brewing"
+  },
+  {
+    "date": "2024-02-08",
+    "breweryName": "Fritz Family Brewers"
+  },
+  {
+    "date": "2024-02-01",
+    "breweryName": "New Belgium Brewing"
+  },
+  {
+    "date": "2024-01-25",
+    "breweryName": "Snowbank Brewing",
+    "isClosed": true
+  },
+  {
+    "date": "2024-01-18",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2024-01-11",
+    "breweryName": "Maxline Brewing"
+  },
+  {
+    "date": "2024-01-04",
+    "breweryName": "Rally King Brewery"
+  },
+  {
+    "date": "2023-12-28",
+    "breweryName": "Intersect Brewing"
+  },
+  {
+    "date": "2023-12-21",
+    "breweryName": "Mountain Cowboy Brewery",
+    "isClosed": true
+  },
+  {
+    "date": "2023-12-07",
+    "breweryName": "Grimm Brothers Brewing"
+  },
+  {
+    "date": "2023-11-30",
+    "breweryName": "Equinox Brewery"
+  },
+  {
+    "date": "2023-11-23",
+    "breweryName": "Tap and Handle"
+  },
+  {
+    "date": "2023-11-16",
+    "breweryName": "Crooked Stave Taproom",
+    "isClosed": true
+  },
+  {
+    "date": "2023-11-09",
+    "breweryName": "Salt Road Brewery"
+  },
+  {
+    "date": "2023-11-02",
+    "breweryName": "Big Beaver Brewing",
+    "isClosed": true
+  },
+  {
+    "date": "2023-10-26",
+    "breweryName": "Jessup Farm Barrel House"
+  },
+  {
+    "date": "2023-10-19",
+    "breweryName": "Crooked Beech Brewing"
+  },
+  {
+    "date": "2023-10-12",
+    "breweryName": "Intersect Brewing"
+  },
+  {
+    "date": "2023-10-05",
+    "breweryName": "Prost Brewing"
+  },
+  {
+    "date": "2023-09-28",
+    "breweryName": "Stodgy Brewing"
+  },
+  {
+    "date": "2023-09-21",
+    "breweryName": "Mash Lab Brewing"
+  },
+  {
+    "date": "2023-09-14",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2023-09-07",
+    "breweryName": "Gilded Goat Brewing Co."
+  },
+  {
+    "date": "2023-08-31",
+    "breweryName": "Maxline Brewing"
+  },
+  {
+    "date": "2023-08-24",
+    "breweryName": "Equinox Brewery"
+  },
+  {
+    "date": "2023-08-17",
+    "breweryName": "Odell Brewing Co."
+  },
+  {
+    "date": "2023-08-10",
+    "breweryName": "Mythmaker Brewing"
+  },
+  {
+    "date": "2023-08-03",
+    "breweryName": "Ramskellar"
+  },
+  {
+    "date": "2023-07-27",
+    "breweryName": "Timnath Beerwerks"
+  },
+  {
+    "date": "2023-07-20",
+    "breweryName": "Crooked Beech Brewing"
+  },
+  {
+    "date": "2023-07-13",
+    "breweryName": "Crop Hop Brewing",
+    "isClosed": true
+  },
+  {
+    "date": "2023-07-06",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2023-06-30",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2023-06-29",
+    "breweryName": "Equinox Brewery"
+  },
+  {
+    "date": "2023-06-22",
+    "breweryName": "Horse and Dragon Brewery"
+  },
+  {
+    "date": "2023-06-15",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2023-06-08",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2023-06-01",
+    "breweryName": "Grimm Brothers Brewing"
+  },
+  {
+    "date": "2023-05-25",
+    "breweryName": "Stodgy Brewing"
+  },
+  {
+    "date": "2023-05-18",
+    "breweryName": "Timnath Beerwerks"
+  },
+  {
+    "date": "2023-05-11",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2023-05-04",
+    "breweryName": "New Belgium Brewing"
+  },
+  {
+    "date": "2023-04-27",
+    "breweryName": "Salt Road Brewery"
+  },
+  {
+    "date": "2023-04-20",
+    "breweryName": "Maxline Brewing"
+  },
+  {
+    "date": "2023-04-13",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2023-04-06",
+    "breweryName": "Obstacle Brewery",
+    "isClosed": true
+  },
+  {
+    "date": "2023-03-30",
+    "breweryName": "Loveland Ale Works"
+  },
+  {
+    "date": "2023-03-23",
+    "breweryName": "Fennelly Bar and Grill"
+  },
+  {
+    "date": "2023-03-09",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2023-02-28",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2023-02-23",
+    "breweryName": "City Star Brewing"
+  },
+  {
+    "date": "2023-02-16",
+    "breweryName": "Gilded Goat Brewing Co."
+  },
+  {
+    "date": "2023-02-09",
+    "breweryName": "Mythmaker Brewing"
+  },
+  {
+    "date": "2023-02-02",
+    "breweryName": "Prost Brewing"
+  },
+  {
+    "date": "2023-01-26",
+    "breweryName": "Peculier Brewing"
+  },
+  {
+    "date": "2023-01-19",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2023-01-12",
+    "breweryName": "Hello Brewery"
+  },
+  {
+    "date": "2023-01-05",
+    "breweryName": "Wibby Brewing"
+  },
+  {
+    "date": "2022-12-15",
+    "breweryName": "Odell Brewing Co."
+  },
+  {
+    "date": "2022-12-01",
+    "breweryName": "Peculier Brewing"
+  },
+  {
+    "date": "2022-11-24",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2022-11-23",
+    "breweryName": "Jessup Farm Barrel House"
+  },
+  {
+    "date": "2022-11-10",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2022-10-27",
+    "breweryName": "CooperSmith's Pub & Brewing"
+  },
+  {
+    "date": "2022-10-20",
+    "breweryName": "High Hops Brewery"
+  },
+  {
+    "date": "2022-10-13",
+    "breweryName": "Intersect Brewing"
+  },
+  {
+    "date": "2022-10-09",
+    "breweryName": "Stodgy Brewing"
+  },
+  {
+    "date": "2022-09-29",
+    "breweryName": "Timnath Beerwerks"
+  },
+  {
+    "date": "2022-09-15",
+    "breweryName": "City Star Brewing"
+  },
+  {
+    "date": "2022-09-08",
+    "breweryName": "Sky Bear Brewery"
+  },
+  {
+    "date": "2022-08-31",
+    "breweryName": "Mash Lab Brewing"
+  },
+  {
+    "date": "2022-08-24",
+    "breweryName": "Crooked Stave Taproom",
+    "isClosed": true
+  },
+  {
+    "date": "2022-08-11",
+    "breweryName": "Sky Bear Brewery"
+  },
+  {
+    "date": "2022-08-04",
+    "breweryName": "Peculier Brewing"
+  },
+  {
+    "date": "2022-07-28",
+    "breweryName": "Horse and Dragon Brewery"
+  },
+  {
+    "date": "2022-07-20",
+    "breweryName": "Sparge Brewing"
+  },
+  {
+    "date": "2022-07-13",
+    "breweryName": "Mythmaker Brewing"
+  },
+  {
+    "date": "2022-07-07",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2022-06-29",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2022-06-08",
+    "breweryName": "Maxline Brewing"
+  },
+  {
+    "date": "2022-06-01",
+    "breweryName": "Stodgy Brewing"
+  },
+  {
+    "date": "2022-05-25",
+    "breweryName": "New Belgium Brewing"
+  },
+  {
+    "date": "2022-05-11",
+    "breweryName": "Gilded Goat Taproom"
+  },
+  {
+    "date": "2022-05-04",
+    "breweryName": "C.B. & Potts"
+  },
+  {
+    "date": "2022-04-27",
+    "breweryName": "Intersect Brewing"
+  },
+  {
+    "date": "2022-04-19",
+    "breweryName": "Prost Brewing"
+  },
+  {
+    "date": "2022-04-12",
+    "breweryName": "Verboten Brewing"
+  },
+  {
+    "date": "2022-04-06",
+    "breweryName": "Odell Brewing Co."
+  },
+  {
+    "date": "2022-03-30",
+    "breweryName": "Jessup Farm Barrel House"
+  },
+  {
+    "date": "2022-03-23",
+    "breweryName": "DC Oaks"
+  },
+  {
+    "date": "2022-03-10",
+    "breweryName": "Big Thompson Brewery"
+  },
+  {
+    "date": "2022-03-03",
+    "breweryName": "Snowbank Brewing",
+    "isClosed": true
+  },
+  {
+    "date": "2022-02-26",
+    "breweryName": "Zwei Brewing"
+  },
+  {
+    "date": "2022-02-10",
+    "breweryName": "Purpose Brewing and Cellars"
+  },
+  {
+    "date": "2022-02-03",
+    "breweryName": "Crooked Stave Taproom",
+    "isClosed": true
+  },
+  {
+    "date": "2022-01-26",
+    "breweryName": "Sweetwater Brewing",
+    "isClosed": true
+  },
+  {
+    "date": "2022-01-19",
+    "breweryName": "Timnath Beerwerks"
+  },
+  {
+    "date": "2022-01-05",
+    "breweryName": "Verboten Brewing"
+  }
+]
