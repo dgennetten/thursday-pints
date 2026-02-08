@@ -1,0 +1,408 @@
+[
+  {
+    "brewery_name": "Zwei Brewing",
+    "brewery_address": "4612 S Mason St Ste 120, Fort Collins, CO 80525",
+    "latitude": 40.52277,
+    "longitude": -105.07859,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Verboten Brewing",
+    "brewery_address": "127 E 5th St, Loveland, CO 80537",
+    "latitude": 40.3966476,
+    "longitude": -105.0750972,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Stodgy Brewing",
+    "brewery_address": "1802 Laporte Ave, Fort Collins, CO 80521",
+    "latitude": 40.58975,
+    "longitude": -105.1015,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Timnath Beerwerks",
+    "brewery_address": "4138 Main St, Timnath, CO 80547",
+    "latitude": 40.529722,
+    "longitude": -104.981667,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Prost Brewing",
+    "brewery_address": "1510 S College Ave, Fort Collins, CO 80524",
+    "latitude": 40.5688,
+    "longitude": -105.0768,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Horse and Dragon Brewery",
+    "brewery_address": "124 Racquette Dr, Fort Collins, CO 80524",
+    "latitude": 40.589644,
+    "longitude": -105.045623,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Equinox Brewery",
+    "brewery_address": "133 Remington St, Fort Collins, CO 80524",
+    "latitude": 40.5876,
+    "longitude": -105.0755,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Maxline Brewing",
+    "brewery_address": "2724 McClelland Dr #190, Fort Collins, CO 80525",
+    "latitude": 40.548,
+    "longitude": -105.076,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "New Belgium Brewing",
+    "brewery_address": "500 Linden St, Fort Collins, CO 80524",
+    "latitude": 40.5933,
+    "longitude": -105.0689,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Mythmaker Brewing",
+    "brewery_address": "1035 S Taft Hill Rd, Fort Collins, CO 80521",
+    "latitude": 40.5739,
+    "longitude": -105.1135,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Loveland Ale Works",
+    "brewery_address": "118 W 4th St, Loveland, CO 80537",
+    "latitude": 40.39545,
+    "longitude": -105.07751,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "City Star Brewing",
+    "brewery_address": "321 Mountain Ave, Berthoud, CO 80513",
+    "latitude": 40.3052,
+    "longitude": -105.0768,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Jessup Farm Barrel House",
+    "brewery_address": "1921 Jessup Dr, Fort Collins, CO 80525",
+    "latitude": 40.562143,
+    "longitude": -105.037905,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Odell Brewing Co.",
+    "brewery_address": "800 E Lincoln Ave, Fort Collins, CO 80524",
+    "latitude": 40.5891693,
+    "longitude": -105.0631877,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Intersect Brewing",
+    "brewery_address": "2160 W Drake Rd Suite A-1, Fort Collins, CO 80526",
+    "latitude": 40.5542,
+    "longitude": -105.1204,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Grimm Brothers Brewing",
+    "brewery_address": "815 14th St SW B100, Loveland, CO 80537",
+    "latitude": 40.3795,
+    "longitude": -105.0915,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Verboten North Brewpub",
+    "brewery_address": "1611 S College Ave Unit 1609, Fort Collins, CO 80525",
+    "latitude": 40.5662535,
+    "longitude": -105.0784719,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Peculier Brewing",
+    "brewery_address": "301 Main St, Windsor, CO 80550",
+    "latitude": 40.4795,
+    "longitude": -104.901,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Funkwerks Brewery",
+    "brewery_address": "1900 E Lincoln Ave Unit B, Fort Collins, CO 80524",
+    "latitude": 40.5831516,
+    "longitude": -105.0423678,
+    "status": "Closed"
+  },
+  {
+    "brewery_name": "Salt Road Brewery",
+    "brewery_address": "321 Old Firehouse Alley, Fort Collins, CO 80524",
+    "latitude": 40.588,
+    "longitude": -105.076,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Tap And Handle",
+    "brewery_address": "307 S College Ave, Fort Collins, CO 80524",
+    "latitude": 40.583,
+    "longitude": -105.076,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Gilded Goat Taproom",
+    "brewery_address": "132 W Mountain Ave, Fort Collins, CO 80524",
+    "latitude": 40.587,
+    "longitude": -105.078,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Crooked Beech Brewing",
+    "brewery_address": "3121 N Garfield Ave, Loveland, CO 80538",
+    "latitude": 40.4238,
+    "longitude": -105.072,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Fennelly Bar and Grill",
+    "brewery_address": "Unknown",
+    "latitude": 40.398857,
+    "longitude": -105.052643,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Hello Brewery",
+    "brewery_address": "405 Linden St, Fort Collins, CO 80524",
+    "latitude": 40.5925,
+    "longitude": -105.069,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Gilded Goat Brewing Co.",
+    "brewery_address": "3500 S College Ave #194, Fort Collins, CO 80525",
+    "latitude": 40.537,
+    "longitude": -105.076,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Crooked Stave Taproom",
+    "brewery_address": "216 North College Ave Suite 130, Fort Collins, CO 80524",
+    "latitude": 40.5895,
+    "longitude": -105.0767,
+    "status": "Closed"
+  },
+  {
+    "brewery_name": "Rally King Brewery",
+    "brewery_address": "1624 S Lemay Ave #4, Fort Collins, CO 80525",
+    "latitude": 40.565,
+    "longitude": -105.057,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Purpose Brewing and Cellars",
+    "brewery_address": "4025 S Mason St, Fort Collins, CO 80525",
+    "latitude": 40.5312,
+    "longitude": -105.0801,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Berthoud Brewing",
+    "brewery_address": "1480 Cascade Ave, Loveland, CO 80538",
+    "latitude": 40.4077,
+    "longitude": -105.1298,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Sky Bear Brewery",
+    "brewery_address": "Unknown (Loveland area)",
+    "latitude": 40.3960784,
+    "longitude": -105.0740332,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Mash Lab Brewing",
+    "brewery_address": "4487 Highland Meadows Pkwy, Windsor, CO 80550",
+    "latitude": 40.474,
+    "longitude": -104.964,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Breckenridge Brewery",
+    "brewery_address": "1020 E Lincoln Ave, Fort Collins, CO 80524",
+    "latitude": 40.5891748,
+    "longitude": -105.0611475,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Snowbank Brewing",
+    "brewery_address": "225 N Lemay Ave Ste 1, Fort Collins, CO 80524",
+    "latitude": 40.5905,
+    "longitude": -105.0582,
+    "status": "Closed"
+  },
+  {
+    "brewery_name": "CooperSmith's Pub & Brewing",
+    "brewery_address": "5 Old Town Square, Fort Collins, CO 80524",
+    "latitude": 40.5874,
+    "longitude": -105.0757,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Timnath Beerwerks North",
+    "brewery_address": "225 N Lemay Ave #1, Fort Collins, CO 80524",
+    "latitude": 40.5905,
+    "longitude": -105.0582,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Sweetwater Brewing",
+    "brewery_address": "1020 E Lincoln Ave, Fort Collins, CO 80524",
+    "latitude": 40.5892,
+    "longitude": -105.0611,
+    "status": "Closed"
+  },
+  {
+    "brewery_name": "Crop Hop Brewing",
+    "brewery_address": "214 E 4th St, Loveland, CO 80537",
+    "latitude": 40.3955,
+    "longitude": -105.073,
+    "status": "Closed"
+  },
+  {
+    "brewery_name": "Fritz Family Brewers",
+    "brewery_address": "6778 N 79th St, Niwot, CO 80503",
+    "latitude": 40.0998718,
+    "longitude": -105.1683732,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "High Hops Brewery",
+    "brewery_address": "6461 Hwy 392, Windsor, CO 80550",
+    "latitude": 40.4715,
+    "longitude": -104.938,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Big Thompson Brewery",
+    "brewery_address": "114 E 15th St, Loveland, CO 80538",
+    "latitude": 40.408,
+    "longitude": -105.074,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Tightknit Brewing",
+    "brewery_address": "3940 Carson Ave Unit 4, Evans, CO 80620",
+    "latitude": 40.37637,
+    "longitude": -104.692187,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Mighty River Brewing",
+    "brewery_address": "6383 Fairgrounds Ave, Windsor, CO 80550",
+    "latitude": 40.4572622,
+    "longitude": -104.9820182,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Wibby Brewing",
+    "brewery_address": "209 Emery St, Longmont, CO 80501",
+    "latitude": 40.1615,
+    "longitude": -105.1009,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Bootstrap Brewing",
+    "brewery_address": "142 Pratt St, Longmont, CO 80501",
+    "latitude": 40.1615877,
+    "longitude": -105.1063766,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Rule105 Brewing",
+    "brewery_address": "4731 W 10th St, Greeley, CO 80534",
+    "latitude": 40.434,
+    "longitude": -104.757,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "DC Oaks",
+    "brewery_address": "3581 Harmony Road #110, Fort Collins, CO 80528",
+    "latitude": 40.5239,
+    "longitude": -105.0299,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "C.B. & Potts",
+    "brewery_address": "1441 E Horsetooth Rd, Fort Collins, CO 80525",
+    "latitude": 40.538,
+    "longitude": -105.055,
+    "status": "Closed"
+  },
+  {
+    "brewery_name": "Oscar Blues",
+    "brewery_address": "1800 Pike Road Unit B, Longmont, CO 80501",
+    "latitude": 40.1391916,
+    "longitude": -105.1230808,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Ramskellar",
+    "brewery_address": "1101 Center Ave Mall, Fort Collins, CO 80521",
+    "latitude": 40.5749,
+    "longitude": -105.0865,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Konstruct Brewing",
+    "brewery_address": "3027 E Harmony Rd Suite 2, Fort Collins, CO 80528",
+    "latitude": 40.5233,
+    "longitude": -105.029,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Obstacle Brewery",
+    "brewery_address": "4613 S Mason St Ste D1, Fort Collins, CO 80525",
+    "latitude": 40.524,
+    "longitude": -105.078,
+    "status": "Closed"
+  },
+  {
+    "brewery_name": "Mountain Cowboy Brewery",
+    "brewery_address": "318 5th St, Frederick, CO 80530",
+    "latitude": 40.0991,
+    "longitude": -104.9372,
+    "status": "Closed"
+  },
+  {
+    "brewery_name": "Big Beaver Brewing",
+    "brewery_address": "2707 W Eisenhower Blvd Unit 9, Loveland, CO 80537",
+    "latitude": 40.40787,
+    "longitude": -105.11446,
+    "status": "Closed"
+  },
+  {
+    "brewery_name": "Left Hand Brewing",
+    "brewery_address": "1265 Boston Ave, Longmont, CO 80501",
+    "latitude": 40.1582861,
+    "longitude": -105.1150233,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Sparge Brewing",
+    "brewery_address": "3999 Gw Bush Ave Unit 101, Wellington, CO 80549",
+    "latitude": 40.681843,
+    "longitude": -105.0016942,
+    "status": "Closed"
+  },
+  {
+    "brewery_name": "Mayor of Old Town",
+    "brewery_address": "632 S Mason St, Fort Collins, CO 80524",
+    "latitude": 40.5789202,
+    "longitude": -105.0811052,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "BJ's Restaurant & Brewhouse",
+    "brewery_address": "2670 E Harmony Rd, Fort Collins, CO 80528",
+    "latitude": 40.5238537,
+    "longitude": -105.0299725,
+    "status": "Open"
+  }
+]

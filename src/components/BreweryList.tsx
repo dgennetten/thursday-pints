@@ -6,9 +6,11 @@ import { MapPin, Calendar, Search, X } from 'lucide-react';
 interface BreweryListProps {
   breweries: BreweryStats[];
   title: string;
+  hideBadge?: boolean;
+  mapActive?: boolean;
 }
 
-export default function BreweryList({ breweries, title }: BreweryListProps) {
+export default function BreweryList({ breweries, title, hideBadge = false, mapActive = false }: BreweryListProps) {
   const [filterText, setFilterText] = useState('');
 
   // Filter breweries based on filter text (searches names and dates)
@@ -45,7 +47,7 @@ export default function BreweryList({ breweries, title }: BreweryListProps) {
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200">
       <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-2">
+        <div className={mapActive ? "flex flex-col gap-3 mb-2" : "flex items-center justify-between mb-2"}>
           <div>
             <h2 className="text-xl font-bold text-gray-900">{title}</h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -54,7 +56,7 @@ export default function BreweryList({ breweries, title }: BreweryListProps) {
               {!filterText && ` total`}
             </p>
           </div>
-          <div className="relative w-64">
+          <div className={`relative ${mapActive ? 'w-full' : 'w-64'}`}>
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
               <Search className="w-4 h-4 text-gray-400" />
             </div>
@@ -95,20 +97,32 @@ export default function BreweryList({ breweries, title }: BreweryListProps) {
                   <h3 className="text-lg font-semibold text-gray-900">
                     {brewery.name}
                   </h3>
+                  {brewery.isClosed && (
+                    <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
+                      Closed
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="w-4 h-4" />
                   <span>Last visit: {formatDate(brewery.lastVisitDate)}</span>
                 </div>
+                {hideBadge && (
+                  <div className="text-sm text-gray-600 mt-1">
+                    visits: {brewery.visitCount}
+                  </div>
+                )}
               </div>
-              <div className="ml-4">
-                <div className="bg-blue-100 text-blue-800 rounded-full px-4 py-2 text-center min-w-[60px]">
-                  <div className="text-2xl font-bold">{brewery.visitCount}</div>
-                  <div className="text-xs font-medium">
-                    {brewery.visitCount === 1 ? 'visit' : 'visits'}
+              {!hideBadge && (
+                <div className="ml-4">
+                  <div className="bg-blue-100 text-blue-800 rounded-full px-4 py-2 text-center min-w-[60px]">
+                    <div className="text-2xl font-bold">{brewery.visitCount}</div>
+                    <div className="text-xs font-medium">
+                      {brewery.visitCount === 1 ? 'visit' : 'visits'}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           ))

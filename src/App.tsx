@@ -6,13 +6,13 @@ import BreweryList from './components/BreweryList';
 import VisitList from './components/VisitList';
 import ToggleButton from './components/ToggleButton';
 import BreweryMap from './components/BreweryMap';
-import { Beer, MapPin, RefreshCw, TrendingUp, TrendingDown, Route, Building2, Map } from 'lucide-react';
+import { Beer, MapPin, RefreshCw, Route, Building2, Star, Map } from 'lucide-react';
 import { loadVisitsFromPublicJSON } from './services/spreadsheetService';
 
-type ViewMode = 'top' | 'bottom' | 'tour' | 'breweries';
+type ViewMode = 'breweries' | 'ranked' | 'tour';
 
 function App() {
-  const [viewMode, setViewMode] = useState<ViewMode>('top');
+  const [viewMode, setViewMode] = useState<ViewMode>('breweries');
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [showMap, setShowMap] = useState(false);
@@ -46,33 +46,21 @@ function App() {
   const totalBreweries = breweryStats.length;
   const totalVisits = visits.length;
 
-  const topBreweries = useMemo(
-    () => getTopBreweries(breweryStats, 25),
-    [breweryStats]
-  );
-
-  const bottomBreweries = useMemo(
-    () => getBottomBreweries(breweryStats, 25),
-    [breweryStats]
-  );
-
-  const displayedBreweries = viewMode === 'top' ? topBreweries : 
-                             viewMode === 'bottom' ? bottomBreweries : 
-                             viewMode === 'breweries'
-                             ? [...breweryStats].sort((a, b) => {
-                                 const dateA = new Date(a.lastVisitDate).getTime();
-                                 const dateB = new Date(b.lastVisitDate).getTime();
-                                 return dateB - dateA; // Newest first
-                               })
-                             : [...breweryStats].sort((a, b) => b.visitCount - a.visitCount);
+  const displayedBreweries = viewMode === 'breweries'
+    ? [...breweryStats].sort((a, b) => {
+        const dateA = new Date(a.lastVisitDate).getTime();
+        const dateB = new Date(b.lastVisitDate).getTime();
+        return dateB - dateA; // Newest first
+      })
+    : viewMode === 'ranked'
+    ? [...breweryStats].sort((a, b) => b.visitCount - a.visitCount)
+    : [...breweryStats].sort((a, b) => b.visitCount - a.visitCount);
   
-  const listTitle = viewMode === 'top' 
-    ? 'Top 25 Visited' 
-    : viewMode === 'bottom'
-    ? 'Bottom 25 Visited*'
-    : viewMode === 'breweries'
+  const listTitle = viewMode === 'breweries'
     ? 'Breweries by Last Visit'
-    : 'All Breweries';
+    : viewMode === 'ranked'
+    ? 'Breweries by Popularity'
+    : 'Thursday Pints Tour';
 
 
   if (loading) {
@@ -144,19 +132,13 @@ function App() {
               <div className="flex-1">
                 <ToggleButton
                   options={[
-                    { label: 'Top 25', value: 'top', icon: TrendingUp },
-                    { label: 'Bottom 25*', value: 'bottom', icon: TrendingDown },
-                    { label: 'Tour', value: 'tour', icon: Route },
-                    { label: 'Breweries', value: 'breweries', icon: Building2 }
+                    { label: 'Breweries', value: 'breweries', icon: Building2 },
+                    { label: 'Ranked', value: 'ranked', icon: Star },
+                    { label: 'Tour', value: 'tour', icon: Route }
                   ]}
                   selected={viewMode}
                   onChange={(value) => setViewMode(value as ViewMode)}
                 />
-                {viewMode === 'bottom' && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    *Closed breweries excluded
-                  </p>
-                )}
               </div>
               {isLocalhost && (
                 <button
@@ -174,25 +156,29 @@ function App() {
             </div>
 
             {/* Content with optional map */}
-            <div className={`grid gap-6 ${showMap ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+            <div className={`grid gap-6 ${showMap ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {/* List */}
-              <div>
+              <div className="min-w-0">
                 {viewMode === 'tour' ? (
                   <VisitList
                     visits={visits}
-                    title="Tour"
+                    title={listTitle}
+                    hideBadge={showMap}
+                    mapActive={showMap}
                   />
                 ) : (
                   <BreweryList
                     breweries={displayedBreweries}
                     title={listTitle}
+                    hideBadge={showMap}
+                    mapActive={showMap}
                   />
                 )}
               </div>
 
               {/* Map */}
               {isLocalhost && showMap && (
-                <div className="h-[500px] md:h-[600px]">
+                <div className="h-[500px] min-w-0">
                   <BreweryMap
                     breweries={viewMode === 'tour' 
                       ? breweryStats.sort((a, b) => b.visitCount - a.visitCount)

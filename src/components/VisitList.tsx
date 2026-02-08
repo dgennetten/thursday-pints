@@ -6,9 +6,11 @@ import { Calendar, MapPin, Search, X } from 'lucide-react';
 interface VisitListProps {
   visits: Visit[];
   title: string;
+  hideBadge?: boolean;
+  mapActive?: boolean;
 }
 
-export default function VisitList({ visits, title }: VisitListProps) {
+export default function VisitList({ visits, title, hideBadge = false, mapActive = false }: VisitListProps) {
   const [filterText, setFilterText] = useState('');
   if (visits.length === 0) {
     return (
@@ -58,7 +60,7 @@ export default function VisitList({ visits, title }: VisitListProps) {
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200">
       <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-2">
+        <div className={mapActive ? "flex flex-col gap-3 mb-2" : "flex items-center justify-between mb-2"}>
           <div>
             <h2 className="text-xl font-bold text-gray-900">{title}</h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -67,7 +69,7 @@ export default function VisitList({ visits, title }: VisitListProps) {
               {!filterText && ` total`}
             </p>
           </div>
-          <div className="relative w-64">
+          <div className={`relative ${mapActive ? 'w-full' : 'w-64'}`}>
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
               <Search className="w-4 h-4 text-gray-400" />
             </div>
@@ -121,6 +123,11 @@ export default function VisitList({ visits, title }: VisitListProps) {
                   <p className="text-sm text-gray-600">
                     {formatDate(visit.date)}
                   </p>
+                  {hideBadge && (
+                    <div className="text-sm text-gray-600 mt-1">
+                      visits: {breweryVisitCounts.get(visit.breweryName) || 1}
+                    </div>
+                  )}
                   {visit.notes && (
                     <div className="mt-2 bg-yellow-50 border border-yellow-200 rounded-lg p-2">
                       <p className="text-sm text-gray-700">{visit.notes}</p>
@@ -128,16 +135,18 @@ export default function VisitList({ visits, title }: VisitListProps) {
                   )}
                 </div>
               </div>
-              <div className="ml-4">
-                <div className="bg-blue-100 text-blue-800 rounded-full px-4 py-2 text-center min-w-[60px]">
-                  <div className="text-2xl font-bold">
-                    {breweryVisitCounts.get(visit.breweryName) || 1}
-                  </div>
-                  <div className="text-xs font-medium">
-                    {breweryVisitCounts.get(visit.breweryName) === 1 ? 'visit' : 'visits'}
+              {!hideBadge && (
+                <div className="ml-4">
+                  <div className="bg-blue-100 text-blue-800 rounded-full px-4 py-2 text-center min-w-[60px]">
+                    <div className="text-2xl font-bold">
+                      {breweryVisitCounts.get(visit.breweryName) || 1}
+                    </div>
+                    <div className="text-xs font-medium">
+                      {breweryVisitCounts.get(visit.breweryName) === 1 ? 'visit' : 'visits'}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           ))
