@@ -57,9 +57,9 @@ function App() {
     : [...breweryStats].sort((a, b) => b.visitCount - a.visitCount);
   
   const listTitle = viewMode === 'breweries'
-    ? 'Breweries by Last Visit'
+    ? 'By Last Visit'
     : viewMode === 'ranked'
-    ? 'Breweries by Popularity'
+    ? 'By Popularity'
     : 'Thursday Pints Tour';
 
 

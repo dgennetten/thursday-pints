@@ -79,7 +79,7 @@ export default function BreweryList({ breweries, title, hideBadge = false, mapAc
           </div>
         </div>
       </div>
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto">
         {filteredBreweries.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">No breweries match your filter.</p>
