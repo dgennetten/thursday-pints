@@ -16,6 +16,12 @@ function App() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [showMap, setShowMap] = useState(false);
+  
+  // Check if running on localhost
+  const isLocalhost = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || 
+     window.location.hostname === '127.0.0.1' ||
+     window.location.hostname === '');
 
   // Load data from public/data.json
   useEffect(() => {
@@ -89,7 +95,7 @@ function App() {
             <img 
               src="/logo.svg" 
               alt="Thursday Pints Logo" 
-              className="h-12 sm:h-16 w-auto"
+              className="h-16 w-auto"
             />
           </div>
         </div>
@@ -143,17 +149,19 @@ function App() {
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => setShowMap(!showMap)}
-                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  showMap
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <Map className="w-4 h-4" />
-                Map
-              </button>
+              {isLocalhost && (
+                <button
+                  onClick={() => setShowMap(!showMap)}
+                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    showMap
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <Map className="w-4 h-4" />
+                  Map
+                </button>
+              )}
             </div>
 
             {/* Content with optional map */}
@@ -174,7 +182,7 @@ function App() {
               </div>
 
               {/* Map */}
-              {showMap && (
+              {isLocalhost && showMap && (
                 <div className="h-[500px] md:h-[600px]">
                   <BreweryMap
                     breweries={viewMode === 'all' 
