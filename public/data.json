@@ -1,11 +1,12 @@
 [
-   {
+  {
     "date": "2026-02-05",
     "breweryName": "Mighty River Brewing"
   }, 
   {
     "date": "2026-01-29",
-    "breweryName": "Loveland Ale Works"
+    "breweryName": "Loveland Ale Works",
+    "notes": "then went to Pour House"
   },
   {
     "date": "2026-01-22",
@@ -13,7 +14,8 @@
   },
   {
     "date": "2026-01-15",
-    "breweryName": "Rally King Brewery"
+    "breweryName": "Rally King Brewery",
+    "notes": "Jessup was closed until Feb"
   },
   {
     "date": "2026-01-08",
@@ -58,7 +60,8 @@
   {
     "date": "2025-10-30",
     "breweryName": "Funkwerks Brewery",
-    "isClosed": true
+    "isClosed": true,
+    "notes": "Last Time Before Closing"
   },
   {
     "date": "2025-10-23",
@@ -86,7 +89,8 @@
   },
   {
     "date": "2025-09-11",
-    "breweryName": "Fennelly Bar and Grill"
+    "breweryName": "Fennelly Bar and Grill",
+    "notes": "Send off for Heather and Nigel"
   },
   {
     "date": "2025-09-04",
@@ -98,7 +102,8 @@
   },
   {
     "date": "2025-08-21",
-    "breweryName": "Prost Brewing"
+    "breweryName": "Prost Brewing",
+    "notes": "Fort Collins"
   },
   {
     "date": "2025-08-14",
@@ -107,7 +112,8 @@
   },
   {
     "date": "2025-08-07",
-    "breweryName": "Verboten Brewing"
+    "breweryName": "Verboten Brewing",
+    "notes": "IPA Day"
   },
   {
     "date": "2025-07-31",
@@ -115,11 +121,13 @@
   },
   {
     "date": "2025-07-24",
-    "breweryName": "Mythmaker Brewing"
+    "breweryName": "Mythmaker Brewing",
+    "notes": "Terrible Clue"
   },
   {
     "date": "2025-07-17",
-    "breweryName": "Timnath Beerwerks North"
+    "breweryName": "Timnath Beerwerks North",
+    "notes": "Fort Collins"
   },
   {
     "date": "2025-07-10",
@@ -147,11 +155,13 @@
   },
   {
     "date": "2025-05-29",
-    "breweryName": "Verboten North Brewpub"
+    "breweryName": "Verboten North Brewpub",
+    "notes": "Fort Collins"
   },
   {
     "date": "2025-05-22",
-    "breweryName": "Prost Brewing"
+    "breweryName": "Prost Brewing",
+    "notes": "Fort Collins"
   },
   {
     "date": "2025-05-15",
@@ -159,11 +169,13 @@
   },
   {
     "date": "2025-05-08",
-    "breweryName": "Peculier Brewing"
+    "breweryName": "Peculier Brewing",
+    "notes": "Windsor"
   },
   {
     "date": "2025-05-01",
-    "breweryName": "Breckenridge Brewery"
+    "breweryName": "Breckenridge Brewery",
+    "notes": "Fort Collins"
   },
   {
     "date": "2025-04-24",
@@ -188,7 +200,8 @@
   },
   {
     "date": "2025-03-20",
-    "breweryName": "City Star Brewing"
+    "breweryName": "City Star Brewing",
+    "notes": "Berthoud"
   },
   {
     "date": "2025-03-13",
@@ -212,7 +225,8 @@
   },
   {
     "date": "2025-02-06",
-    "breweryName": "New Belgium Brewing"
+    "breweryName": "New Belgium Brewing",
+    "notes": "Pole got his nickname"
   },
   {
     "date": "2025-01-30",
@@ -244,7 +258,8 @@
   },
   {
     "date": "2024-12-12",
-    "breweryName": "Tightknit Brewing"
+    "breweryName": "Tightknit Brewing",
+    "notes": "Greeley location"
   },
   {
     "date": "2024-12-05",
@@ -256,7 +271,8 @@
   },
   {
     "date": "2024-11-21",
-    "breweryName": "Prost Brewing"
+    "breweryName": "Prost Brewing",
+    "notes": "Fort Collins"
   },
   {
     "date": "2024-11-14",
@@ -300,7 +316,8 @@
   },
   {
     "date": "2024-09-05",
-    "breweryName": "Sky Bear Brewery"
+    "breweryName": "Sky Bear Brewery",
+    "notes": "Big Beaver Brewing"
   },
   {
     "date": "2024-08-29",
@@ -312,7 +329,8 @@
   },
   {
     "date": "2024-08-15",
-    "breweryName": "Oscar Blues"
+    "breweryName": "Oscar Blues",
+    "notes": "Longmont"
   },
   {
     "date": "2024-08-08",
@@ -383,11 +401,13 @@
   },
   {
     "date": "2024-04-04",
-    "breweryName": "Gilded Goat Taproom"
+    "breweryName": "Gilded Goat Taproom",
+    "notes": "Downtown"
   },
   {
     "date": "2024-03-28",
-    "breweryName": "Mayor of Old Town"
+    "breweryName": "Mayor of Old Town",
+    "notes": "Not a Brewery"
   },
   {
     "date": "2024-03-21",
@@ -415,7 +435,8 @@
   },
   {
     "date": "2024-02-08",
-    "breweryName": "Fritz Family Brewers"
+    "breweryName": "Fritz Family Brewers",
+    "notes": "Niwot"
   },
   {
     "date": "2024-02-01",
@@ -445,7 +466,8 @@
   {
     "date": "2023-12-21",
     "breweryName": "Mountain Cowboy Brewery",
-    "isClosed": true
+    "isClosed": true,
+    "notes": "Christmas pint"
   },
   {
     "date": "2023-12-07",
@@ -457,12 +479,14 @@
   },
   {
     "date": "2023-11-23",
-    "breweryName": "Tap and Handle"
+    "breweryName": "Tap and Handle",
+    "notes": "Thanksgiving"
   },
   {
     "date": "2023-11-16",
     "breweryName": "Crooked Stave Taproom",
-    "isClosed": true
+    "isClosed": true,
+    "notes": "Followed by burgers at Choice City"
   },
   {
     "date": "2023-11-09",
@@ -499,7 +523,8 @@
   },
   {
     "date": "2023-09-14",
-    "breweryName": "Verboten Brewing"
+    "breweryName": "Verboten Brewing",
+    "notes": "Loveland"
   },
   {
     "date": "2023-09-07",
@@ -523,20 +548,24 @@
   },
   {
     "date": "2023-08-03",
-    "breweryName": "Ramskellar"
+    "breweryName": "Ramskellar",
+    "notes": "CSU"
   },
   {
     "date": "2023-07-27",
-    "breweryName": "Timnath Beerwerks"
+    "breweryName": "Timnath Beerwerks",
+    "notes": "Timnath"
   },
   {
     "date": "2023-07-20",
-    "breweryName": "Crooked Beech Brewing"
+    "breweryName": "Crooked Beech Brewing",
+    "notes": "43rd brewery visited"
   },
   {
     "date": "2023-07-13",
     "breweryName": "Crop Hop Brewing",
-    "isClosed": true
+    "isClosed": true,
+    "notes": "Loveland"
   },
   {
     "date": "2023-07-06",
@@ -544,7 +573,8 @@
   },
   {
     "date": "2023-06-30",
-    "breweryName": "Zwei Brewing"
+    "breweryName": "Zwei Brewing",
+    "notes": "With Special Guest George P"
   },
   {
     "date": "2023-06-29",
@@ -576,7 +606,8 @@
   },
   {
     "date": "2023-05-11",
-    "breweryName": "Zwei Brewing"
+    "breweryName": "Zwei Brewing",
+    "notes": "Perry Choice only 1 there"
   },
   {
     "date": "2023-05-04",
@@ -613,7 +644,8 @@
   },
   {
     "date": "2023-02-28",
-    "breweryName": "Verboten Brewing"
+    "breweryName": "Verboten Brewing",
+    "notes": "With special Guest Mark \"Quincy\""
   },
   {
     "date": "2023-02-23",
@@ -633,7 +665,8 @@
   },
   {
     "date": "2023-01-26",
-    "breweryName": "Peculier Brewing"
+    "breweryName": "Peculier Brewing",
+    "notes": "Fort Collins"
   },
   {
     "date": "2023-01-19",
@@ -641,11 +674,13 @@
   },
   {
     "date": "2023-01-12",
-    "breweryName": "Hello Brewery"
+    "breweryName": "Hello Brewery",
+    "notes": "HELLLLLOOOOOO HAHAHA"
   },
   {
     "date": "2023-01-05",
-    "breweryName": "Wibby Brewing"
+    "breweryName": "Wibby Brewing",
+    "notes": "Longmont"
   },
   {
     "date": "2022-12-15",
@@ -653,7 +688,8 @@
   },
   {
     "date": "2022-12-01",
-    "breweryName": "Peculier Brewing"
+    "breweryName": "Peculier Brewing",
+    "notes": "Windsor location"
   },
   {
     "date": "2022-11-24",
@@ -661,7 +697,8 @@
   },
   {
     "date": "2022-11-23",
-    "breweryName": "Jessup Farm Barrel House"
+    "breweryName": "Jessup Farm Barrel House",
+    "notes": "A Paul Let's Meet twice this week special"
   },
   {
     "date": "2022-11-10",
@@ -669,7 +706,8 @@
   },
   {
     "date": "2022-10-27",
-    "breweryName": "CooperSmith's Pub & Brewing"
+    "breweryName": "CooperSmith's Pub & Brewing",
+    "notes": "Perry Choice only 1 there"
   },
   {
     "date": "2022-10-20",
@@ -681,7 +719,8 @@
   },
   {
     "date": "2022-10-09",
-    "breweryName": "Stodgy Brewing"
+    "breweryName": "Stodgy Brewing",
+    "notes": "Special Guest Mark \"Quincy\" Fennelly"
   },
   {
     "date": "2022-09-29",
@@ -689,15 +728,18 @@
   },
   {
     "date": "2022-09-15",
-    "breweryName": "City Star Brewing"
+    "breweryName": "City Star Brewing",
+    "notes": "Berthoud"
   },
   {
     "date": "2022-09-08",
-    "breweryName": "Sky Bear Brewery"
+    "breweryName": "Sky Bear Brewery",
+    "notes": "Met Wednesday 9/7"
   },
   {
     "date": "2022-08-31",
-    "breweryName": "Mash Lab Brewing"
+    "breweryName": "Mash Lab Brewing",
+    "notes": "Met Wednesday 8/31"
   },
   {
     "date": "2022-08-24",
@@ -706,11 +748,13 @@
   },
   {
     "date": "2022-08-11",
-    "breweryName": "Sky Bear Brewery"
+    "breweryName": "Sky Bear Brewery",
+    "notes": "Loveland location"
   },
   {
     "date": "2022-08-04",
-    "breweryName": "Peculier Brewing"
+    "breweryName": "Peculier Brewing",
+    "notes": "Windsor location"
   },
   {
     "date": "2022-07-28",
@@ -718,7 +762,8 @@
   },
   {
     "date": "2022-07-20",
-    "breweryName": "Sparge Brewing"
+    "breweryName": "Sparge Brewing",
+    "notes": "Wellington"
   },
   {
     "date": "2022-07-13",
@@ -726,11 +771,13 @@
   },
   {
     "date": "2022-07-07",
-    "breweryName": "Verboten Brewing"
+    "breweryName": "Verboten Brewing",
+    "notes": "Met Wednesday 7/6"
   },
   {
     "date": "2022-06-29",
-    "breweryName": "Zwei Brewing"
+    "breweryName": "Zwei Brewing",
+    "notes": "Met Wednesday 6/29"
   },
   {
     "date": "2022-06-08",
@@ -742,11 +789,13 @@
   },
   {
     "date": "2022-05-25",
-    "breweryName": "New Belgium Brewing"
+    "breweryName": "New Belgium Brewing",
+    "notes": "Met Wednesday 5/25"
   },
   {
     "date": "2022-05-11",
-    "breweryName": "Gilded Goat Taproom"
+    "breweryName": "Gilded Goat Taproom",
+    "notes": "Taproom Downtown FoCo"
   },
   {
     "date": "2022-05-04",

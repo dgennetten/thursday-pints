@@ -251,7 +251,16 @@ export function loadVisitsFromJSON(): Visit[] | null {
 // Load visits from public/data.json file (fallback)
 export async function loadVisitsFromPublicJSON(): Promise<Visit[] | null> {
   try {
-    const response = await fetch('/data.json');
+    // Add cache-busting query parameter and disable cache
+    const timestamp = new Date().getTime();
+    const response = await fetch(`/data.json?v=${timestamp}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
     if (!response.ok) return null;
     
     const visits = await response.json() as Visit[];

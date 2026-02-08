@@ -33,7 +33,7 @@ function parseExcelFile(buffer) {
   
   // Find header row
   let headerRowIndex = -1;
-  const possibleHeaders = ['date', 'brewery', 'name', 'visit', 'closed'];
+  const possibleHeaders = ['date', 'brewery', 'name', 'visit', 'closed', 'notes'];
   
   for (let i = 0; i < Math.min(5, jsonData.length); i++) {
     const row = jsonData[i];
@@ -65,6 +65,10 @@ function parseExcelFile(buffer) {
     String(h).toLowerCase().includes('closed') ||
     String(h).toLowerCase().includes('status')
   );
+  const notesColIndex = headers.findIndex((h) => 
+    String(h).toLowerCase().includes('notes') ||
+    String(h).toLowerCase().includes('note')
+  );
   
   if (dateColIndex === -1 || breweryColIndex === -1) {
     throw new Error('Could not find date or brewery columns in spreadsheet');
@@ -78,6 +82,7 @@ function parseExcelFile(buffer) {
     const dateValue = row[dateColIndex];
     const breweryValue = row[breweryColIndex];
     const closedValue = closedColIndex >= 0 ? row[closedColIndex] : null;
+    const notesValue = notesColIndex >= 0 ? row[notesColIndex] : null;
     
     if (!dateValue || !breweryValue) continue;
     
@@ -103,10 +108,13 @@ function parseExcelFile(buffer) {
       String(closedValue).toLowerCase().includes('yes') ||
       String(closedValue).toLowerCase() === 'true' : false;
     
+    const notes = notesValue ? String(notesValue).trim() : null;
+    
     visits.push({
       date: dateStr,
       breweryName,
-      ...(isClosed && { isClosed: true })
+      ...(isClosed && { isClosed: true }),
+      ...(notes && notes.length > 0 && { notes })
     });
   }
   
