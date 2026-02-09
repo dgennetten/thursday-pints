@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Visit, BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
-import { MapPin, Search, X } from 'lucide-react';
+import { MapPin, Search, X, Calendar } from 'lucide-react';
 
 interface VisitListProps {
   visits: Visit[];
@@ -150,9 +150,10 @@ export default function VisitList({
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600">
-                    {formatDate(visit.date)}
-                  </p>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="w-4 h-4" />
+                    <span>{formatDate(visit.date)}</span>
+                  </div>
                   {hideBadge && (
                     <div className="text-sm text-gray-600 mt-1">
                       visits: {breweryVisitCounts.get(visit.breweryName) || 1}

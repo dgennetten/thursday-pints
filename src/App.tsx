@@ -239,7 +239,7 @@ function App() {
             </div>
 
             {/* Content with optional map */}
-            <div className={`grid gap-6 ${showMap ? 'grid-cols-2' : 'grid-cols-1'} ${showMap ? 'h-[calc(100vh-280px)]' : ''}`}>
+            <div className={`grid gap-3 ${showMap ? 'grid-cols-2' : 'grid-cols-1'} ${showMap ? 'h-[calc(100vh-280px)]' : ''}`}>
               {/* List */}
               <div className={`min-w-0 ${showMap ? 'overflow-y-auto' : ''}`}>
                 {viewMode === 'tour' ? (
