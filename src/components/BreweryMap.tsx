@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef } from 'react';
 import { BreweryWithLocation } from '../types';
+import { formatDate } from '../utils';
 
 // Fix for default marker icons in React-Leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -182,7 +183,7 @@ export default function BreweryMap({ breweries, center, zoom, viewMode, selected
                     </a>
                   )}
                   <p className="text-gray-600">
-                    {brewery.visitCount} {brewery.visitCount === 1 ? 'visit' : 'visits'}
+                    {brewery.visitCount} {brewery.visitCount === 1 ? 'visit' : 'visits'} — last visit {formatDate(brewery.lastVisitDate)}
                   </p>
                   {brewery.isClosed && (
                     <p className="text-red-600 text-xs">Closed</p>
