@@ -11,3 +11,17 @@ export interface BreweryStats {
   lastVisitDate: string;
   isClosed: boolean;
 }
+
+export interface BreweryLocation {
+  brewery_name: string;
+  brewery_address: string;
+  latitude: number;
+  longitude: number;
+  status: string; // "Open" or "Closed"
+}
+
+export interface BreweryWithLocation extends BreweryStats {
+  lat?: number;
+  lng?: number;
+  address?: string;
+}

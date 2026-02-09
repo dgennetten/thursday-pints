@@ -1,16 +1,29 @@
-import { useState, useMemo } from 'react';
-import { Visit } from '../types';
+import { useState, useMemo, useEffect } from 'react';
+import { Visit, BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
-import { Calendar, MapPin, Search, X } from 'lucide-react';
+import { MapPin, Search, X } from 'lucide-react';
 
 interface VisitListProps {
   visits: Visit[];
   title: string;
   hideBadge?: boolean;
   mapActive?: boolean;
+  onBrewerySelect?: (name: string | null) => void;
+  selectedBrewery?: string | null;
+  breweriesData?: Map<string, BreweryWithLocation>;
+  setFilteredBreweries?: (breweries: BreweryWithLocation[]) => void;
 }
 
-export default function VisitList({ visits, title, hideBadge = false, mapActive = false }: VisitListProps) {
+export default function VisitList({ 
+  visits, 
+  title, 
+  hideBadge = false, 
+  mapActive = false,
+  onBrewerySelect,
+  selectedBrewery,
+  breweriesData,
+  setFilteredBreweries
+}: VisitListProps) {
   const [filterText, setFilterText] = useState('');
   if (visits.length === 0) {
     return (
@@ -57,6 +70,20 @@ export default function VisitList({ visits, title, hideBadge = false, mapActive 
     });
   }, [sortedVisits, filterText]);
 
+  // Convert filtered visits to breweries for map
+  useEffect(() => {
+    if (setFilteredBreweries && breweriesData) {
+      const uniqueBreweries = new Map<string, BreweryWithLocation>();
+      filteredVisits.forEach(visit => {
+        const brewery = breweriesData.get(visit.breweryName);
+        if (brewery) {
+          uniqueBreweries.set(visit.breweryName, brewery);
+        }
+      });
+      setFilteredBreweries(Array.from(uniqueBreweries.values()));
+    }
+  }, [filteredVisits, breweriesData, setFilteredBreweries]);
+
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200">
       <div className="p-4 border-b border-gray-200">
@@ -101,14 +128,17 @@ export default function VisitList({ visits, title, hideBadge = false, mapActive 
           filteredVisits.map((visit, index) => (
           <div
             key={`${visit.date}-${visit.breweryName}-${index}`}
-            className="p-4 hover:bg-gray-50 transition-colors"
+            className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+              selectedBrewery === visit.breweryName ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+            }`}
+            onClick={() => {
+              if (onBrewerySelect) {
+                onBrewerySelect(selectedBrewery === visit.breweryName ? null : visit.breweryName);
+              }
+            }}
           >
             <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3 flex-1">
-                <div className="bg-blue-100 rounded-full p-2 mt-0.5">
-                  <Calendar className="w-4 h-4 text-blue-600" />
-                </div>
-                <div className="flex-1">
+              <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <MapPin className="w-4 h-4 text-gray-400" />
                     <h3 className="text-lg font-semibold text-gray-900">
@@ -133,7 +163,6 @@ export default function VisitList({ visits, title, hideBadge = false, mapActive 
                       <p className="text-sm text-gray-700">{visit.notes}</p>
                     </div>
                   )}
-                </div>
               </div>
               {!hideBadge && (
                 <div className="ml-4">

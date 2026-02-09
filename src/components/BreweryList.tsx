@@ -1,16 +1,27 @@
-import { useState, useMemo } from 'react';
-import { BreweryStats } from '../types';
+import { useState, useMemo, useEffect } from 'react';
+import { BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
 import { MapPin, Calendar, Search, X } from 'lucide-react';
 
 interface BreweryListProps {
-  breweries: BreweryStats[];
+  breweries: BreweryWithLocation[];
   title: string;
   hideBadge?: boolean;
   mapActive?: boolean;
+  onBrewerySelect?: (name: string | null) => void;
+  selectedBrewery?: string | null;
+  setFilteredBreweries?: (breweries: BreweryWithLocation[]) => void;
 }
 
-export default function BreweryList({ breweries, title, hideBadge = false, mapActive = false }: BreweryListProps) {
+export default function BreweryList({ 
+  breweries, 
+  title, 
+  hideBadge = false, 
+  mapActive = false,
+  onBrewerySelect,
+  selectedBrewery,
+  setFilteredBreweries
+}: BreweryListProps) {
   const [filterText, setFilterText] = useState('');
 
   // Filter breweries based on filter text (searches names and dates)
@@ -34,6 +45,13 @@ export default function BreweryList({ breweries, title, hideBadge = false, mapAc
       return nameMatch || dateMatch || countMatch;
     });
   }, [breweries, filterText]);
+
+  // Update filtered breweries in parent when filter changes
+  useEffect(() => {
+    if (setFilteredBreweries) {
+      setFilteredBreweries(filteredBreweries);
+    }
+  }, [filteredBreweries, setFilteredBreweries]);
 
   if (breweries.length === 0) {
     return (
@@ -88,7 +106,14 @@ export default function BreweryList({ breweries, title, hideBadge = false, mapAc
           filteredBreweries.map((brewery, index) => (
           <div
             key={`${brewery.name}-${index}`}
-            className="p-4 hover:bg-gray-50 transition-colors"
+            className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+              selectedBrewery === brewery.name ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+            }`}
+            onClick={() => {
+              if (onBrewerySelect) {
+                onBrewerySelect(selectedBrewery === brewery.name ? null : brewery.name);
+              }
+            }}
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
