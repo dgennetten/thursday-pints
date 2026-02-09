@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { BreweryWithLocation } from '../types';
 
 // Fix for default marker icons in React-Leaflet
@@ -40,22 +40,47 @@ function createColoredIcon(color: string): L.Icon {
 function MapUpdater({ center, zoom, selectedBrewery, breweries }: { center: [number, number]; zoom: number; selectedBrewery: string | null; breweries: BreweryWithLocation[] }) {
   const map = useMap();
   
+  // Track previous values to detect actual changes
+  const prevCenterRef = useRef<[number, number] | null>(null);
+  const prevZoomRef = useRef<number | null>(null);
+  const prevSelectedBreweryRef = useRef<string | null>(null);
+  
   useEffect(() => {
-    // Close any open popups before panning
-    map.closePopup();
+    const centerChanged = prevCenterRef.current === null || 
+      prevCenterRef.current[0] !== center[0] || prevCenterRef.current[1] !== center[1];
+    const zoomChanged = prevZoomRef.current === null || prevZoomRef.current !== zoom;
+    const selectedChanged = prevSelectedBreweryRef.current !== selectedBrewery;
     
-    // If a brewery is selected, just zoom to it
-    if (selectedBrewery) {
-      map.setView(center, zoom);
-    } else {
-      // Otherwise, use fitBounds to properly fit all breweries in the viewport
-      const withLocation = breweries.filter(b => b.lat != null && b.lng != null);
-      if (withLocation.length > 0) {
-        const bounds = withLocation.map(b => [b.lat!, b.lng!] as [number, number]);
-        // Use fitBounds which accounts for the actual viewport size
-        map.fitBounds(bounds, { padding: [20, 20] });
-      } else {
+    // Only close popups and pan/zoom if center, zoom, or selection actually changed
+    if (centerChanged || zoomChanged || selectedChanged) {
+      // Close any open popups before panning
+      map.closePopup();
+      
+      // If a brewery is selected, just zoom to it
+      if (selectedBrewery) {
         map.setView(center, zoom);
+      } else {
+        // Otherwise, use fitBounds to properly fit all breweries in the viewport
+        const withLocation = breweries.filter(b => b.lat != null && b.lng != null);
+        if (withLocation.length > 0) {
+          const bounds = withLocation.map(b => [b.lat!, b.lng!] as [number, number]);
+          // Use fitBounds which accounts for the actual viewport size
+          map.fitBounds(bounds, { padding: [20, 20] });
+        } else {
+          map.setView(center, zoom);
+        }
+      }
+      
+      // Update refs
+      prevCenterRef.current = center;
+      prevZoomRef.current = zoom;
+      prevSelectedBreweryRef.current = selectedBrewery;
+    } else {
+      // If only breweries changed (e.g., due to filtering), update bounds without closing popups
+      const withLocation = breweries.filter(b => b.lat != null && b.lng != null);
+      if (withLocation.length > 0 && !selectedBrewery) {
+        const bounds = withLocation.map(b => [b.lat!, b.lng!] as [number, number]);
+        map.fitBounds(bounds, { padding: [20, 20] });
       }
     }
   }, [map, center, zoom, selectedBrewery, breweries]);
