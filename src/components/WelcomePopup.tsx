@@ -11,8 +11,16 @@ export default function WelcomePopup({ version, onClose }: WelcomePopupProps) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   useEffect(() => {
-    // Load instructions from markdown file
-    fetch('/instructions.md')
+    // Load instructions from markdown file with cache-busting
+    const timestamp = new Date().getTime();
+    fetch(`/instructions.md?v=${timestamp}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
       .then(res => res.text())
       .then(text => setInstructions(text))
       .catch(err => {
@@ -61,28 +69,9 @@ export default function WelcomePopup({ version, onClose }: WelcomePopupProps) {
       } else {
         if (inList) {
           result.push('</ul>');
-          inList = false;
-        }
-        if (line.trim() && !line.match(/^<[h]/)) {
-          result.push(`<p class="mb-2">${line}</p>`);
-        } else if (line.trim()) {
-          result.push(line);
-        }
-      }
-    });
-    
-    if (inList) {
-      result.push('</ul>');
-    }
-    
-    return result.join('\n');
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          inList = false; } if (line.trim() && !line.match(/^<[h]/)) { result.push(`<p class="mb-2">${line}</p>`); } else if (line.trim()) { result.push(line); } } }); if (inList) { result.push('</ul>'); } return result.join('\n'); }; return ( <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"> <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Welcome!</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Welcome to the Tour Tracker!</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"

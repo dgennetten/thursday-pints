@@ -62,8 +62,13 @@ function App() {
   // Check if welcome popup should be shown
   useEffect(() => {
     const welcomeDismissed = localStorage.getItem('thursday-pints-welcome-dismissed');
-    if (!welcomeDismissed) {
+    const lastVersion = localStorage.getItem('thursday-pints-version');
+    
+    // Show welcome if never dismissed, or if version has changed
+    if (!welcomeDismissed || lastVersion !== APP_VERSION) {
       setShowWelcome(true);
+      // Update stored version
+      localStorage.setItem('thursday-pints-version', APP_VERSION);
     }
   }, []);
 
@@ -287,6 +292,9 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <p className="text-center text-sm text-gray-500">
             Thursday Pints Social Club • Since 2020
+          </p>
+          <p className="text-center text-xs text-gray-400 mt-2">
+            Version {APP_VERSION} • <a href="mailto:feedback@thursdaypints.com" className="text-blue-600 hover:underline">Send Feedback!</a> • <a href="mailto:errors@thursdaypints.com" className="text-blue-600 hover:underline">Report Errors!</a>
           </p>
         </div>
       </footer>
