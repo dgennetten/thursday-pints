@@ -5,9 +5,12 @@ import BreweryList from './components/BreweryList';
 import VisitList from './components/VisitList';
 import ToggleButton from './components/ToggleButton';
 import BreweryMap from './components/BreweryMap';
+import WelcomePopup from './components/WelcomePopup';
 import { RefreshCw, Route, Building2, Star, Map as MapIcon } from 'lucide-react';
 import { loadVisitsFromPublicJSON } from './services/spreadsheetService';
 import { loadBreweriesFromJSON } from './services/breweryService';
+
+const APP_VERSION = '0.1.0';
 
 type ViewMode = 'breweries' | 'ranked' | 'tour';
 
@@ -19,6 +22,7 @@ function App() {
   const [showMap, setShowMap] = useState(false);
   const [selectedBrewery, setSelectedBrewery] = useState<string | null>(null);
   const [filteredBreweries, setFilteredBreweries] = useState<BreweryWithLocation[]>([]);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   // Load data from public/data.json and public/breweries.json
   useEffect(() => {
@@ -53,6 +57,14 @@ function App() {
     }
     
     loadData();
+  }, []);
+
+  // Check if welcome popup should be shown
+  useEffect(() => {
+    const welcomeDismissed = localStorage.getItem('thursday-pints-welcome-dismissed');
+    if (!welcomeDismissed) {
+      setShowWelcome(true);
+    }
   }, []);
 
   // Clear selected brewery when switching tabs
@@ -134,17 +146,32 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading brewery data...</p>
+      <>
+        {showWelcome && (
+          <WelcomePopup 
+            version={APP_VERSION}
+            onClose={() => setShowWelcome(false)}
+          />
+        )}
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading brewery data...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      {showWelcome && (
+        <WelcomePopup 
+          version={APP_VERSION}
+          onClose={() => setShowWelcome(false)}
+        />
+      )}
+      <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
@@ -264,6 +291,7 @@ function App() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
 

@@ -147,7 +147,14 @@ export default function BreweryMap({ breweries, center, zoom, viewMode, selected
                 <div className="text-sm">
                   <h3 className="font-semibold">{brewery.name}</h3>
                   {brewery.address && (
-                    <p className="text-gray-600 text-xs">{brewery.address}</p>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(brewery.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline text-xs block mt-1"
+                    >
+                      {brewery.address}
+                    </a>
                   )}
                   <p className="text-gray-600">
                     {brewery.visitCount} {brewery.visitCount === 1 ? 'visit' : 'visits'}
