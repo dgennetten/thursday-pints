@@ -3,6 +3,7 @@ export interface Visit {
   breweryName: string;
   isClosed?: boolean; // true if brewery is closed
   notes?: string; // optional notes for the visit
+  nextBrewery?: string; // either a brewery name or a limerick
 }
 
 export interface BreweryStats {

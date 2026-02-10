@@ -6,6 +6,7 @@ import VisitList from './components/VisitList';
 import ToggleButton from './components/ToggleButton';
 import BreweryMap from './components/BreweryMap';
 import WelcomePopup from './components/WelcomePopup';
+import NextBreweryCard from './components/NextBreweryCard';
 import { RefreshCw, Route, Building2, Star, Map as MapIcon } from 'lucide-react';
 import { loadVisitsFromPublicJSON } from './services/spreadsheetService';
 import { loadBreweriesFromJSON } from './services/breweryService';
@@ -200,6 +201,21 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Next Brewery Card */}
+        {(() => {
+          // Find the latest visit with a nextBrewery field
+          const latestVisitWithNext = visits
+            .filter(v => v.nextBrewery)
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+          
+          return latestVisitWithNext ? (
+            <NextBreweryCard 
+              nextBrewery={latestVisitWithNext.nextBrewery!} 
+              breweryStats={breweryStats}
+            />
+          ) : null;
+        })()}
+
         {/* Initial Load Message */}
         {visits.length === 0 && !loading && (
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
