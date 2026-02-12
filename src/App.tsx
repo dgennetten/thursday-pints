@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Visit, BreweryWithLocation } from './types';
 import { processVisits } from './utils';
 import BreweryList from './components/BreweryList';
@@ -24,6 +24,9 @@ function App() {
   const [selectedBrewery, setSelectedBrewery] = useState<string | null>(null);
   const [filteredBreweries, setFilteredBreweries] = useState<BreweryWithLocation[]>([]);
   const [showWelcome, setShowWelcome] = useState(false);
+  const buttonsContainerRef = useRef<HTMLDivElement>(null);
+  const contentContainerRef = useRef<HTMLDivElement>(null);
+  const hasUserInteracted = useRef(false);
 
   // Load data from public/data.json and public/breweries.json
   useEffect(() => {
@@ -77,6 +80,55 @@ function App() {
   useEffect(() => {
     setSelectedBrewery(null);
   }, [viewMode]);
+
+  // Update content height to fill available space
+  const updateContentHeight = () => {
+    if (contentContainerRef.current && buttonsContainerRef.current && showMap) {
+      const buttonsRect = buttonsContainerRef.current.getBoundingClientRect();
+      const buttonsBottom = buttonsRect.bottom + window.scrollY;
+      const currentScrollY = window.scrollY;
+      const viewportHeight = window.innerHeight;
+      const availableHeight = viewportHeight - (buttonsBottom - currentScrollY) - 24; // 24px for padding/margin
+      contentContainerRef.current.style.minHeight = `${Math.max(availableHeight, 400)}px`;
+    }
+  };
+
+  // Scroll buttons to just below top (one button height) when viewMode changes after user interaction
+  useEffect(() => {
+    if (!hasUserInteracted.current) {
+      return;
+    }
+    
+    if (buttonsContainerRef.current) {
+      const rect = buttonsContainerRef.current.getBoundingClientRect();
+      const buttonHeight = rect.height;
+      const currentScrollY = window.scrollY;
+      const targetScrollY = currentScrollY + rect.top - buttonHeight;
+      
+      window.scrollTo({
+        top: targetScrollY,
+        behavior: 'smooth'
+      });
+      
+      // Update content container height after scroll completes
+      setTimeout(() => {
+        updateContentHeight();
+      }, 500); // Wait for smooth scroll to complete
+    }
+  }, [viewMode]);
+
+  // Update content height when map is toggled or window is resized
+  useEffect(() => {
+    if (showMap) {
+      // Small delay to ensure layout has updated
+      setTimeout(() => {
+        updateContentHeight();
+      }, 100);
+      const handleResize = () => updateContentHeight();
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [showMap]);
 
   const breweryStats = useMemo(() => processVisits(visits), [visits]);
 
@@ -229,7 +281,7 @@ function App() {
         {/* Top/Bottom Toggle */}
         {visits.length > 0 && (
           <>
-            <div className="mb-6 flex items-center justify-between gap-4">
+            <div ref={buttonsContainerRef} className="mb-6 flex items-center justify-between gap-4">
               <div className="flex-1">
                 <ToggleButton
                   options={[
@@ -238,11 +290,35 @@ function App() {
                     { label: 'Tour', value: 'tour', icon: Route }
                   ]}
                   selected={viewMode}
-                  onChange={(value) => setViewMode(value as ViewMode)}
+                  onChange={(value) => {
+                    hasUserInteracted.current = true;
+                    setViewMode(value as ViewMode);
+                  }}
                 />
               </div>
               <button
-                onClick={() => setShowMap(!showMap)}
+                onClick={() => {
+                  setShowMap(!showMap);
+                  // Scroll buttons to just below top (one button height) after a brief delay
+                  setTimeout(() => {
+                    if (buttonsContainerRef.current) {
+                      const rect = buttonsContainerRef.current.getBoundingClientRect();
+                      const buttonHeight = rect.height;
+                      const currentScrollY = window.scrollY;
+                      const targetScrollY = currentScrollY + rect.top - buttonHeight;
+                      
+                      window.scrollTo({
+                        top: targetScrollY,
+                        behavior: 'smooth'
+                      });
+                      
+                      // Update content height after scroll completes
+                      setTimeout(() => {
+                        updateContentHeight();
+                      }, 500);
+                    }
+                  }, 0);
+                }}
                 className={`flex items-center gap-2 px-4 py-2 text-lg font-medium rounded-lg transition-colors ${
                   showMap
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
@@ -255,7 +331,10 @@ function App() {
             </div>
 
             {/* Content with optional map */}
-            <div className={`grid gap-3 ${showMap ? 'grid-cols-2' : 'grid-cols-1'} ${showMap ? 'h-[calc(100vh-280px)]' : ''}`}>
+            <div 
+              ref={contentContainerRef}
+              className={`grid ${showMap ? 'gap-[18px] grid-cols-2' : 'gap-3 grid-cols-1'}`}
+            >
               {/* List */}
               <div className={`min-w-0 ${showMap ? 'overflow-y-auto' : ''}`}>
                 {viewMode === 'tour' ? (
