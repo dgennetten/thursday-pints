@@ -151,7 +151,7 @@ function App() {
       ? [...breweriesWithLocation].sort((a, b) => {
           const dateA = new Date(a.lastVisitDate).getTime();
           const dateB = new Date(b.lastVisitDate).getTime();
-          return dateB - dateA; // Newest first
+          return dateA - dateB; // Oldest first
         })
       : viewMode === 'ranked'
       ? [...breweriesWithLocation].sort((a, b) => b.visitCount - a.visitCount)
@@ -164,7 +164,7 @@ function App() {
     ? 'By Last Visit'
     : viewMode === 'ranked'
     ? 'By Popularity'
-    : 'Thursday Pints Tour';
+    : 'By Tour Date';
 
   // Calculate map center and zoom based on displayed breweries
   const mapCenter = useMemo(() => {

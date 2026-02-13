@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Visit, BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
-import { MapPin, Search, X, Calendar } from 'lucide-react';
+import { MapPin, Search, X, Calendar, ChevronsUpDown } from 'lucide-react';
 
 interface VisitListProps {
   visits: Visit[];
@@ -25,6 +25,7 @@ export default function VisitList({
   setFilteredBreweries
 }: VisitListProps) {
   const [filterText, setFilterText] = useState('');
+  const [isReversed, setIsReversed] = useState(false);
   if (visits.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
@@ -50,25 +51,28 @@ export default function VisitList({
 
   // Filter visits based on filter text (searches names, dates, and notes)
   const filteredVisits = useMemo(() => {
-    if (!filterText.trim()) {
-      return sortedVisits;
+    let result = sortedVisits;
+    
+    if (filterText.trim()) {
+      const searchTerm = filterText.toLowerCase().trim();
+      result = sortedVisits.filter(visit => {
+        // Search in brewery name
+        const nameMatch = visit.breweryName.toLowerCase().includes(searchTerm);
+        
+        // Search in formatted date
+        const formattedDate = formatDate(visit.date).toLowerCase();
+        const dateMatch = formattedDate.includes(searchTerm) || visit.date.includes(searchTerm);
+        
+        // Search in notes
+        const notesMatch = visit.notes?.toLowerCase().includes(searchTerm) || false;
+        
+        return nameMatch || dateMatch || notesMatch;
+      });
     }
     
-    const searchTerm = filterText.toLowerCase().trim();
-    return sortedVisits.filter(visit => {
-      // Search in brewery name
-      const nameMatch = visit.breweryName.toLowerCase().includes(searchTerm);
-      
-      // Search in formatted date
-      const formattedDate = formatDate(visit.date).toLowerCase();
-      const dateMatch = formattedDate.includes(searchTerm) || visit.date.includes(searchTerm);
-      
-      // Search in notes
-      const notesMatch = visit.notes?.toLowerCase().includes(searchTerm) || false;
-      
-      return nameMatch || dateMatch || notesMatch;
-    });
-  }, [sortedVisits, filterText]);
+    // Reverse the list if isReversed is true
+    return isReversed ? [...result].reverse() : result;
+  }, [sortedVisits, filterText, isReversed]);
 
   // Convert filtered visits to breweries for map
   useEffect(() => {
@@ -88,13 +92,22 @@ export default function VisitList({
     <div className="bg-white rounded-lg shadow-md border border-gray-200">
       <div className="p-4 border-b border-gray-200">
         <div className={mapActive ? "flex flex-col gap-3 mb-2" : "flex items-center justify-between mb-2"}>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {filteredVisits.length} {filteredVisits.length === 1 ? 'visit' : 'visits'}
-              {filterText && ` of ${visits.length} total`}
-              {!filterText && ` total`}
-            </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsReversed(!isReversed)}
+              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              aria-label="Reverse list order"
+            >
+              <ChevronsUpDown className="w-5 h-5 text-gray-600" />
+            </button>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {filteredVisits.length} {filteredVisits.length === 1 ? 'visit' : 'visits'}
+                {filterText && ` of ${visits.length} total`}
+                {!filterText && ` total`}
+              </p>
+            </div>
           </div>
           <div className={`relative ${mapActive ? 'w-full' : 'w-64'}`}>
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
