@@ -2,6 +2,7 @@
  **Breweries**: View all breweries sorted by last visit date
  **Ranked**: See breweries sorted by popularity (most visits). Pins are colored from red (most visits) to gray (least visits)
  **Tour**: View all visits in chronological order
+ Use the up-down chevron button to reverse the sort of any list.
 
 ### Map View
 Toggle the **Map** button to show or hide the interactive map. When active, the map displays side-by-side with the list for easy navigation.
