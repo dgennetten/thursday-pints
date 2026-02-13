@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+    <title>Thursday Pints - Brewery Tour Tracker</title>
 import { Visit, BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
 import { MapPin, Search, X, Calendar, ChevronsUpDown } from 'lucide-react';

@@ -404,5 +404,12 @@
     "latitude": 40.5238537,
     "longitude": -105.0299725,
     "status": "Open"
+  },
+  {
+    "brewery_name": "Rock Bottom Brewery",
+    "brewery_address": "6025 Sky Pond Drive, Loveland, CO 80538",
+    "latitude": 40.4188,
+    "longitude": -105.0005,
+    "status": "Open"
   }
 ]
