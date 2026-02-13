@@ -74,11 +74,27 @@ jobs:
           }
           
           // Validate required fields
-          if (!brewery || !nextBrewery) {
-            console.error('Error: Missing required fields');
-            console.error(`Brewery: ${brewery || 'MISSING'}`);
-            console.error(`Next Brewery: ${nextBrewery || 'MISSING'}`);
+          if (!brewery) {
+            console.error('Error: Missing required field - Brewery Name');
             process.exit(1);
+          }
+          
+          // Check if date is less than a week old
+          const visitDate = new Date(date);
+          const today = new Date();
+          const daysDiff = Math.floor((today - visitDate) / (1000 * 60 * 60 * 24));
+          const isRecent = daysDiff < 7;
+          
+          // Next Brewery is required only for recent visits (less than a week old)
+          if (isRecent && !nextBrewery) {
+            console.error('Error: Next Brewery is required for recent visits (within the last week)');
+            console.error(`Visit date: ${date} (${daysDiff} days ago)`);
+            process.exit(1);
+          }
+          
+          // For old data, nextBrewery can be null/undefined
+          if (!isRecent && !nextBrewery) {
+            console.log(`Note: Next Brewery not provided for historical data (${daysDiff} days old) - this is OK`);
           }
           
           // Output to GitHub Actions
@@ -87,7 +103,12 @@ jobs:
           if (outputFile) {
             fs.appendFileSync(outputFile, `date=${date}\n`);
             fs.appendFileSync(outputFile, `brewery=${brewery.replace(/\n/g, ' ')}\n`);
-            fs.appendFileSync(outputFile, `next_brewery=${nextBrewery.replace(/\n/g, '\\n')}\n`);
+            // Only add next_brewery if it exists
+            if (nextBrewery) {
+              fs.appendFileSync(outputFile, `next_brewery=${nextBrewery.replace(/\n/g, '\\n')}\n`);
+            } else {
+              fs.appendFileSync(outputFile, `next_brewery=\n`);
+            }
             fs.appendFileSync(outputFile, `notes=${(notes || '').replace(/\n/g, ' ')}\n`);
           } else {
             // Fallback for testing
@@ -107,11 +128,15 @@ jobs:
       
       - name: Update data.json
         run: |
-          node scripts/add-visit.js \
-            --date "${{ steps.parse.outputs.date }}" \
-            --brewery "${{ steps.parse.outputs.brewery }}" \
-            --next-brewery "${{ steps.parse.outputs.next_brewery }}" \
-            --notes "${{ steps.parse.outputs.notes }}"
+          # Build command with optional next-brewery
+          CMD="node scripts/add-visit.js --date \"${{ steps.parse.outputs.date }}\" --brewery \"${{ steps.parse.outputs.brewery }}\""
+          if [ -n "${{ steps.parse.outputs.next_brewery }}" ]; then
+            CMD="$CMD --next-brewery \"${{ steps.parse.outputs.next_brewery }}\""
+          fi
+          if [ -n "${{ steps.parse.outputs.notes }}" ]; then
+            CMD="$CMD --notes \"${{ steps.parse.outputs.notes }}\""
+          fi
+          eval $CMD
       
       - name: Build application
         run: npm run build
@@ -145,7 +170,7 @@ jobs:
               body: '✅ Visit added and deployed successfully!\n\n' +
                     `- **Date:** ${{ steps.parse.outputs.date }}\n` +
                     `- **Brewery:** ${{ steps.parse.outputs.brewery }}\n` +
-                    `- **Next Brewery:** ${{ steps.parse.outputs.next_brewery }}\n` +
+                    (${{ steps.parse.outputs.next_brewery }} ? `- **Next Brewery:** ${{ steps.parse.outputs.next_brewery }}\n` : '- **Next Brewery:** (not provided for historical data)\n') +
                     (${{ steps.parse.outputs.notes }} ? `- **Notes:** ${{ steps.parse.outputs.notes }}\n` : '')
             })
             

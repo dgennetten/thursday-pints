@@ -17,8 +17,21 @@ const brewery = getArg('brewery');
 const nextBrewery = getArg('next-brewery');
 const notes = getArg('notes');
 
-if (!date || !brewery || !nextBrewery) {
-  console.error('Missing required arguments: date, brewery, next-brewery');
+if (!date || !brewery) {
+  console.error('Missing required arguments: date, brewery');
+  process.exit(1);
+}
+
+// Check if date is less than a week old
+const visitDate = new Date(date);
+const today = new Date();
+const daysDiff = Math.floor((today - visitDate) / (1000 * 60 * 60 * 24));
+const isRecent = daysDiff < 7;
+
+// Next Brewery is required only for recent visits
+if (isRecent && !nextBrewery) {
+  console.error('Error: next-brewery is required for recent visits (within the last week)');
+  console.error(`Visit date: ${date} (${daysDiff} days ago)`);
   process.exit(1);
 }
 
@@ -47,7 +60,15 @@ if (existingIndex !== -1) {
   console.log(`⚠️  Visit already exists for ${date}. Updating existing entry.`);
   // Update existing entry
   data[existingIndex].breweryName = brewery;
-  data[existingIndex].nextBrewery = nextBrewery;
+  
+  // Only update nextBrewery if provided
+  if (nextBrewery && nextBrewery.trim()) {
+    data[existingIndex].nextBrewery = nextBrewery.trim();
+  } else if (data[existingIndex].nextBrewery) {
+    // Remove nextBrewery if not provided and it exists
+    delete data[existingIndex].nextBrewery;
+  }
+  
   if (notes && notes.trim()) {
     data[existingIndex].notes = notes.trim();
   } else if (data[existingIndex].notes) {
@@ -57,9 +78,13 @@ if (existingIndex !== -1) {
   // Create new visit entry
   const newVisit = {
     date,
-    breweryName: brewery,
-    nextBrewery: nextBrewery.trim()
+    breweryName: brewery
   };
+
+  // Only add nextBrewery if provided
+  if (nextBrewery && nextBrewery.trim()) {
+    newVisit.nextBrewery = nextBrewery.trim();
+  }
 
   if (notes && notes.trim()) {
     newVisit.notes = notes.trim();

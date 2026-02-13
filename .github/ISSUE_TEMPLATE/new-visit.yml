@@ -23,10 +23,10 @@ body:
     id: next_brewery
     attributes:
       label: Next Brewery (Limerick or Name)
-      description: Either a limerick hint or the brewery name for next week
-      placeholder: "Enter limerick or brewery name"
+      description: Either a limerick hint or the brewery name for next week. Required for recent visits (within the last week), optional for older historical data.
+      placeholder: "Enter limerick or brewery name (optional for old data)"
     validations:
-      required: true
+      required: false
   - type: textarea
     id: notes
     attributes:
