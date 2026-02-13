@@ -35,9 +35,12 @@ export default function BreweryList({
         // Search in brewery name
         const nameMatch = brewery.name.toLowerCase().includes(searchTerm);
         
-        // Search in formatted date
-        const formattedDate = formatDate(brewery.lastVisitDate).toLowerCase();
-        const dateMatch = formattedDate.includes(searchTerm) || brewery.lastVisitDate.includes(searchTerm);
+        // Search in formatted date (if available)
+        let dateMatch = false;
+        if (brewery.lastVisitDate) {
+          const formattedDate = formatDate(brewery.lastVisitDate).toLowerCase();
+          dateMatch = formattedDate.includes(searchTerm) || brewery.lastVisitDate.includes(searchTerm);
+        }
         
         // Search in visit count
         const countMatch = brewery.visitCount.toString().includes(searchTerm);
@@ -141,10 +144,18 @@ export default function BreweryList({
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Calendar className="w-4 h-4" />
-                  <span>Last visit: {formatDate(brewery.lastVisitDate)}</span>
-                </div>
+                {brewery.lastVisitDate && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="w-4 h-4" />
+                    <span>Last visit: {formatDate(brewery.lastVisitDate)}</span>
+                  </div>
+                )}
+                {!brewery.lastVisitDate && (
+                  <div className="flex items-center gap-2 text-sm text-gray-400 italic">
+                    <Calendar className="w-4 h-4" />
+                    <span>No visits yet</span>
+                  </div>
+                )}
                 {hideBadge && (
                   <div className="text-sm text-gray-600 mt-1">
                     visits: {brewery.visitCount}

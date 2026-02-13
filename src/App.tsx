@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Visit, BreweryWithLocation } from './types';
-import { processVisits } from './utils';
+import { processVisits, mergeBreweryStatsWithAllBreweries } from './utils';
 import BreweryList from './components/BreweryList';
 import VisitList from './components/VisitList';
 import ToggleButton from './components/ToggleButton';
@@ -132,9 +132,17 @@ function App() {
 
   const breweryStats = useMemo(() => processVisits(visits), [visits]);
 
+  // Merge brewery stats with all breweries from breweries.json (including zero-visit breweries)
+  const allBreweryStats = useMemo(() => {
+    if (breweriesData.size === 0) {
+      return breweryStats; // If no brewery data loaded yet, just return stats
+    }
+    return mergeBreweryStatsWithAllBreweries(breweryStats, breweriesData);
+  }, [breweryStats, breweriesData]);
+
   // Merge brewery stats with location data
   const breweriesWithLocation = useMemo(() => {
-    return breweryStats.map(brewery => {
+    return allBreweryStats.map(brewery => {
       const locationData = breweriesData.get(brewery.name);
       return {
         ...brewery,
@@ -144,11 +152,16 @@ function App() {
         isClosed: locationData?.status === 'Closed' || brewery.isClosed
       } as BreweryWithLocation;
     });
-  }, [breweryStats, breweriesData]);
+  }, [allBreweryStats, breweriesData]);
 
   const displayedBreweries = useMemo(() => {
     let sorted = viewMode === 'breweries'
       ? [...breweriesWithLocation].sort((a, b) => {
+          // Handle breweries with no visits (empty lastVisitDate)
+          if (!a.lastVisitDate && !b.lastVisitDate) return 0;
+          if (!a.lastVisitDate) return 1; // No visits go to end
+          if (!b.lastVisitDate) return -1; // No visits go to end
+          
           const dateA = new Date(a.lastVisitDate).getTime();
           const dateB = new Date(b.lastVisitDate).getTime();
           return dateA - dateB; // Oldest first

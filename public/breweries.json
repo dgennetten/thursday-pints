@@ -259,7 +259,7 @@
     "status": "Closed"
   },
   {
-    "brewery_name": "Crop Hop Brewing",
+    "brewery_name": "Crow Hop Brewing",
     "brewery_address": "214 E 4th St, Loveland, CO 80537",
     "latitude": 40.3955,
     "longitude": -105.073,
@@ -410,6 +410,41 @@
     "brewery_address": "6025 Sky Pond Drive, Loveland, CO 80538",
     "latitude": 40.4188,
     "longitude": -105.0005,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Weldwerks Brewing",
+    "brewery_address": "508 8th Ave, Greeley, CO 80631",
+    "latitude": 40.4244,
+    "longitude": -104.6903,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Rock Coast Brewing",
+    "brewery_address": "Unknown (Loveland area)",
+    "latitude": 40.395,
+    "longitude": -105.075,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Bear Brewery",
+    "brewery_address": "Unknown (Loveland area)",
+    "latitude": 40.395,
+    "longitude": -105.075,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Envy Brewing",
+    "brewery_address": "Unknown (Fort Collins area)",
+    "latitude": 40.5853,
+    "longitude": -105.0844,
+    "status": "Open"
+  },
+  {
+    "brewery_name": "Soul Squared Brewing",
+    "brewery_address": "Unknown (Wellington area)",
+    "latitude": 40.7019,
+    "longitude": -105.0086,
     "status": "Open"
   }
 ]

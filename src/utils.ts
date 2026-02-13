@@ -31,8 +31,59 @@ export function processVisits(visits: Visit[]): BreweryStats[] {
   }));
 }
 
+export function mergeBreweryStatsWithAllBreweries(
+  stats: BreweryStats[],
+  allBreweries: Map<string, { lat: number; lng: number; address: string; status: string }>
+): BreweryStats[] {
+  // If no brewery data loaded yet, just return stats from visits
+  // This prevents blank page during initial load
+  if (!allBreweries || allBreweries.size === 0) {
+    return stats;
+  }
+
+  const statsMap = new Map<string, BreweryStats>();
+  stats.forEach(stat => statsMap.set(stat.name, stat));
+
+  // Create stats for all breweries, using visit stats if available
+  const allStats: BreweryStats[] = [];
+  
+  // Add all breweries from breweries.json
+  allBreweries.forEach((locationData, breweryName) => {
+    if (!locationData) return; // Skip invalid entries
+    
+    const existingStat = statsMap.get(breweryName);
+    if (existingStat) {
+      // Use existing stats from visits
+      allStats.push(existingStat);
+    } else {
+      // Brewery with no visits - create zero-visit entry
+      allStats.push({
+        name: breweryName,
+        visitCount: 0,
+        lastVisitDate: '', // Empty string for no visits
+        isClosed: locationData.status === 'Closed'
+      });
+    }
+  });
+
+  // Also add any stats that might not be in breweries.json (edge case)
+  stats.forEach(stat => {
+    if (!allBreweries.has(stat.name)) {
+      allStats.push(stat);
+    }
+  });
+
+  return allStats;
+}
+
 export function formatDate(dateString: string): string {
+  if (!dateString || dateString.trim() === '') {
+    return '';
+  }
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return '';
+  }
   return date.toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'short', 
