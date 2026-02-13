@@ -1,0 +1,170 @@
+name: Process New Visit
+
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created]
+
+jobs:
+  process-visit:
+    # Only run if issue has 'visit' label
+    if: contains(github.event.issue.labels.*.name, 'visit') && github.event.action != 'deleted'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Parse issue data
+        id: parse
+        run: |
+          # Use Node.js to parse GitHub issue form data more reliably
+          node << 'EOF'
+          const body = `${{ github.event.issue.body }}`;
+          
+          // GitHub issue forms use markdown format like:
+          // ### Visit Date
+          // 2026-02-12
+          // ### Brewery Name
+          // High Hops Brewery
+          
+          function extractField(body, fieldName) {
+            const regex = new RegExp(`###\\s+${fieldName}[\\s\\S]*?\\n([\\s\\S]*?)(?=###|$)`, 'i');
+            const match = body.match(regex);
+            if (!match) return null;
+            
+            let value = match[1].trim();
+            // Remove markdown formatting and clean up
+            value = value.replace(/\*\*/g, '').replace(/^[-*]\s*/, '').trim();
+            
+            // Handle "No response" or empty values
+            if (!value || value === 'No response' || value === 'N/A') {
+              return null;
+            }
+            
+            return value;
+          }
+          
+          let date = extractField(body, 'Visit Date');
+          const brewery = extractField(body, 'Brewery Name');
+          let nextBrewery = extractField(body, 'Next Brewery');
+          const notes = extractField(body, 'Notes');
+          
+          // If date is empty, calculate next Thursday
+          if (!date) {
+            const d = new Date();
+            const day = d.getDay();
+            const diff = (4 - day + 7) % 7 || 7; // Thursday is day 4
+            d.setDate(d.getDate() + diff);
+            date = d.toISOString().split('T')[0];
+            console.log(`Calculated next Thursday: ${date}`);
+          }
+          
+          // Validate required fields
+          if (!brewery || !nextBrewery) {
+            console.error('Error: Missing required fields');
+            console.error(`Brewery: ${brewery || 'MISSING'}`);
+            console.error(`Next Brewery: ${nextBrewery || 'MISSING'}`);
+            process.exit(1);
+          }
+          
+          // Output to GitHub Actions
+          const fs = require('fs');
+          const outputFile = process.env.GITHUB_OUTPUT;
+          if (outputFile) {
+            fs.appendFileSync(outputFile, `date=${date}\n`);
+            fs.appendFileSync(outputFile, `brewery=${brewery.replace(/\n/g, ' ')}\n`);
+            fs.appendFileSync(outputFile, `next_brewery=${nextBrewery.replace(/\n/g, '\\n')}\n`);
+            fs.appendFileSync(outputFile, `notes=${(notes || '').replace(/\n/g, ' ')}\n`);
+          } else {
+            // Fallback for testing
+            console.log(`::set-output name=date::${date}`);
+            console.log(`::set-output name=brewery::${brewery}`);
+            console.log(`::set-output name=next_brewery::${nextBrewery}`);
+            console.log(`::set-output name=notes::${notes || ''}`);
+          }
+          
+          console.log('Parsed values:');
+          console.log(`  Date: ${date}`);
+          console.log(`  Brewery: ${brewery}`);
+          console.log(`  Next Brewery: ${nextBrewery}`);
+          console.log(`  Notes: ${notes || '(none)'}`);
+          EOF
+        continue-on-error: false
+      
+      - name: Update data.json
+        run: |
+          node scripts/add-visit.js \
+            --date "${{ steps.parse.outputs.date }}" \
+            --brewery "${{ steps.parse.outputs.brewery }}" \
+            --next-brewery "${{ steps.parse.outputs.next_brewery }}" \
+            --notes "${{ steps.parse.outputs.notes }}"
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add public/data.json dist/data.json
+          git diff --staged --quiet || git commit -m "Add visit: ${{ steps.parse.outputs.date }} - ${{ steps.parse.outputs.brewery }}"
+          git push
+      
+      - name: Deploy to Dreamhost via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /public_html/
+          local-dir: ./dist/
+          dangerous-clean-slate: false
+      
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Visit added and deployed successfully!\n\n' +
+                    `- **Date:** ${{ steps.parse.outputs.date }}\n` +
+                    `- **Brewery:** ${{ steps.parse.outputs.brewery }}\n` +
+                    `- **Next Brewery:** ${{ steps.parse.outputs.next_brewery }}\n` +
+                    (${{ steps.parse.outputs.notes }} ? `- **Notes:** ${{ steps.parse.outputs.notes }}\n` : '')
+            })
+            
+            github.rest.issues.update({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed'
+            })
+        continue-on-error: true
+      
+      - name: Handle errors
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ Error processing visit. Please check the workflow logs for details.'
+            })

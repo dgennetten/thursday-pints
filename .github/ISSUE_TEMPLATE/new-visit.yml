@@ -1,0 +1,44 @@
+name: Add New Visit
+description: Submit a new Thursday Pints visit
+title: "[Visit] "
+labels: ["visit"]
+body:
+  - type: input
+    id: date
+    attributes:
+      label: Visit Date
+      description: Date of the visit (YYYY-MM-DD format, e.g., 2026-02-12). Leave blank to default to the next Thursday.
+      placeholder: "2026-02-12"
+    validations:
+      required: false
+  - type: input
+    id: brewery
+    attributes:
+      label: Brewery Name
+      description: Name of the brewery visited
+      placeholder: "High Hops Brewery"
+    validations:
+      required: true
+  - type: textarea
+    id: next_brewery
+    attributes:
+      label: Next Brewery (Limerick or Name)
+      description: Either a limerick hint or the brewery name for next week
+      placeholder: "Enter limerick or brewery name"
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes (Optional)
+      description: Any additional notes about the visit
+      placeholder: "Optional notes"
+    validations:
+      required: false
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I confirm this information is correct
+          required: true
