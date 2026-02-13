@@ -92,15 +92,15 @@ export default function VisitList({
     <div className="bg-white rounded-lg shadow-md border border-gray-200">
       <div className="p-4 border-b border-gray-200">
         <div className={mapActive ? "flex flex-col gap-3 mb-2" : "flex items-center justify-between mb-2"}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <button
               onClick={() => setIsReversed(!isReversed)}
-              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              className="py-1 hover:bg-gray-100 rounded transition-colors -ml-1"
               aria-label="Reverse list order"
             >
-              <ChevronsUpDown className="w-5 h-5 text-gray-600" />
+              <ChevronsUpDown className="w-6 h-6 text-gray-600" />
             </button>
-            <div>
+            <div className="ml-2">
               <h2 className="text-xl font-bold text-gray-900">{title}</h2>
               <p className="text-sm text-gray-500 mt-1">
                 {filteredVisits.length} {filteredVisits.length === 1 ? 'visit' : 'visits'}
