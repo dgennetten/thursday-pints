@@ -10,8 +10,9 @@ import NextBreweryCard from './components/NextBreweryCard';
 import { RefreshCw, Route, Building2, Star, Map as MapIcon } from 'lucide-react';
 import { loadVisitsFromPublicJSON } from './services/spreadsheetService';
 import { loadBreweriesFromJSON } from './services/breweryService';
+import packageJson from '../package.json';
 
-const APP_VERSION = '0.1.0';
+const APP_VERSION = packageJson.version;
 
 type ViewMode = 'breweries' | 'ranked' | 'tour';
 
