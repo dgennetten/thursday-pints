@@ -17,7 +17,7 @@ const APP_VERSION = packageJson.version;
 type ViewMode = 'breweries' | 'ranked' | 'tour';
 
 function App() {
-  const [viewMode, setViewMode] = useState<ViewMode>('breweries');
+  const [viewMode, setViewMode] = useState<ViewMode>('tour');
   const [visits, setVisits] = useState<Visit[]>([]);
   const [breweriesData, setBreweriesData] = useState<Map<string, { lat: number; lng: number; address: string; status: string }>>(new Map() as Map<string, { lat: number; lng: number; address: string; status: string }>);
   const [loading, setLoading] = useState(true);
