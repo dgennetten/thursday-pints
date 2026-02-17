@@ -377,6 +377,73 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
       
+      - name: Verify server file after upload
+        if: steps.check.outputs.is_visit == 'true'
+        run: |
+          echo "Verifying file was actually updated on server..."
+          node << 'EOF'
+          const ftp = require('basic-ftp');
+          const fs = require('fs');
+          const path = require('path');
+          
+          async function verifyFile() {
+            const client = new ftp.Client();
+            try {
+              await client.access({
+                host: process.env.FTP_SERVER,
+                user: process.env.FTP_USERNAME,
+                password: process.env.FTP_PASSWORD,
+                secure: false
+              });
+              
+              await client.cd('/public_html');
+              
+              // Download the file from server
+              const tempFile = path.join(process.cwd(), 'server-data.json');
+              await client.downloadTo(tempFile, 'data.json');
+              
+              // Compare with local file
+              const localFile = path.join(process.cwd(), 'dist/data.json');
+              const localContent = fs.readFileSync(localFile, 'utf8');
+              const serverContent = fs.readFileSync(tempFile, 'utf8');
+              
+              const localData = JSON.parse(localContent);
+              const serverData = JSON.parse(serverContent);
+              
+              // Find the visit we just added
+              const visitDate = '${{ steps.parse.outputs.date }}';
+              const localVisit = localData.find(v => v.date === visitDate);
+              const serverVisit = serverData.find(v => v.date === visitDate);
+              
+              console.log('Local visit:', JSON.stringify(localVisit, null, 2));
+              console.log('Server visit:', JSON.stringify(serverVisit, null, 2));
+              
+              if (JSON.stringify(localVisit) === JSON.stringify(serverVisit)) {
+                console.log('✅ Server file matches local file - upload successful!');
+              } else {
+                console.log('❌ Server file does NOT match local file!');
+                console.log('This suggests the file was not properly uploaded or was overwritten.');
+                process.exit(1);
+              }
+              
+              // Clean up
+              fs.unlinkSync(tempFile);
+              
+            } catch (error) {
+              console.error('❌ Verification error:', error.message);
+              process.exit(1);
+            } finally {
+              client.close();
+            }
+          }
+          
+          verifyFile();
+          EOF
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      
       - name: Verify deployment
         if: steps.check.outputs.is_visit == 'true'
         run: |
@@ -408,7 +475,7 @@ jobs:
             if (notes && notes.trim() !== '') {
               body += `- **Notes:** ${notes}\n`;
             }
-            body += '\n💡 **Note:** If you don\'t see the changes on the website, try a hard refresh:\n';
+            body += '\n💡 **Note:** If you do not see the changes on the website, try a hard refresh:\n';
             body += '- **Windows/Linux:** Ctrl + F5 or Ctrl + Shift + R\n';
             body += '- **Mac:** Cmd + Shift + R\n';
             body += 'The app uses cache-busting, but your browser may have cached the old file.';
