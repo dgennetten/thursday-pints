@@ -300,9 +300,9 @@ function App() {
               <div className="flex-1">
                 <ToggleButton
                   options={[
-                    { label: 'Breweries', value: 'breweries', icon: Building2 },
+                    { label: 'Tour', value: 'tour', icon: Route },
                     { label: 'Ranked', value: 'ranked', icon: Star },
-                    { label: 'Tour', value: 'tour', icon: Route }
+                    { label: 'Breweries', value: 'breweries', icon: Building2 }
                   ]}
                   selected={viewMode}
                   onChange={(value) => {
