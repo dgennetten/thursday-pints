@@ -8,8 +8,8 @@ on:
 
 jobs:
   process-visit:
-    # Only run if issue has 'visit' label
-    if: contains(github.event.issue.labels.*.name, 'visit') && github.event.action != 'deleted'
+    # Only run if issue has 'visit' label OR title starts with "[Visit]"
+    if: (contains(github.event.issue.labels.*.name, 'visit') || startsWith(github.event.issue.title, '[Visit]')) && github.event.action != 'deleted'
     runs-on: ubuntu-latest
     permissions:
       contents: write
