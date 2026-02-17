@@ -187,6 +187,16 @@ jobs:
       - name: Update data.json
         if: steps.check.outputs.is_visit == 'true'
         run: |
+          echo "Updating data.json with new visit..."
+          echo "Date: ${{ steps.parse.outputs.date }}"
+          echo "Brewery: ${{ steps.parse.outputs.brewery }}"
+          
+          # Save current file size for comparison
+          if [ -f "public/data.json" ]; then
+            OLD_SIZE=$(wc -c < public/data.json)
+            echo "Current data.json size: $OLD_SIZE bytes"
+          fi
+          
           # Build command with optional next-brewery
           CMD="node scripts/add-visit.js --date \"${{ steps.parse.outputs.date }}\" --brewery \"${{ steps.parse.outputs.brewery }}\""
           if [ -n "${{ steps.parse.outputs.next_brewery }}" ]; then
@@ -196,10 +206,46 @@ jobs:
             CMD="$CMD --notes \"${{ steps.parse.outputs.notes }}\""
           fi
           eval $CMD
+          
+          # Check new file size
+          if [ -f "public/data.json" ]; then
+            NEW_SIZE=$(wc -c < public/data.json)
+            echo "New data.json size: $NEW_SIZE bytes"
+            if [ "$OLD_SIZE" != "$NEW_SIZE" ]; then
+              echo "✅ File size changed - visit was added/updated"
+            else
+              echo "⚠️  File size unchanged - visit may have already existed"
+            fi
+          fi
       
       - name: Build application
         if: steps.check.outputs.is_visit == 'true'
         run: npm run build
+      
+      - name: Verify data.json contains new visit
+        if: steps.check.outputs.is_visit == 'true'
+        run: |
+          echo "Verifying that dist/data.json contains the new visit..."
+          if [ -f "dist/data.json" ]; then
+            if grep -q "\"date\": \"${{ steps.parse.outputs.date }}\"" dist/data.json && \
+               grep -q "\"breweryName\": \"${{ steps.parse.outputs.brewery }}\"" dist/data.json; then
+              echo "✅ Verified: Visit found in dist/data.json"
+              # Show the relevant entry
+              node -e "
+                const data = require('./dist/data.json');
+                const visit = data.find(v => v.date === '${{ steps.parse.outputs.date }}');
+                console.log('Visit entry:', JSON.stringify(visit, null, 2));
+              "
+            else
+              echo "❌ ERROR: Visit NOT found in dist/data.json!"
+              echo "Looking for date: ${{ steps.parse.outputs.date }}"
+              echo "Looking for brewery: ${{ steps.parse.outputs.brewery }}"
+              exit 1
+            fi
+          else
+            echo "❌ ERROR: dist/data.json does not exist!"
+            exit 1
+          fi
       
       - name: Commit changes
         if: steps.check.outputs.is_visit == 'true'
