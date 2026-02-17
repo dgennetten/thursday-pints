@@ -278,6 +278,7 @@ function App() {
             <NextBreweryCard 
               nextBrewery={latestVisitWithNext.nextBrewery!} 
               breweryStats={breweryStats}
+              date={latestVisitWithNext.date}
             />
           ) : null;
         })()}

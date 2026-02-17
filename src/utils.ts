@@ -80,7 +80,10 @@ export function formatDate(dateString: string): string {
   if (!dateString || dateString.trim() === '') {
     return '';
   }
-  const date = new Date(dateString);
+  // Parse date string as local date to avoid timezone issues
+  // Format: YYYY-MM-DD
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
   if (isNaN(date.getTime())) {
     return '';
   }
@@ -89,6 +92,27 @@ export function formatDate(dateString: string): string {
     month: 'short', 
     day: 'numeric' 
   });
+}
+
+export function getNextThursday(dateString: string): string {
+  // Parse date string as local date to avoid timezone issues
+  // Format: YYYY-MM-DD
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+  
+  // Always add 7 days (one week later)
+  const nextThursday = new Date(date);
+  nextThursday.setDate(date.getDate() + 7);
+  
+  // Format as YYYY-MM-DD
+  const nextYear = nextThursday.getFullYear();
+  const nextMonth = String(nextThursday.getMonth() + 1).padStart(2, '0');
+  const nextDay = String(nextThursday.getDate()).padStart(2, '0');
+  
+  return `${nextYear}-${nextMonth}-${nextDay}`;
 }
 
 export function getTopBreweries(stats: BreweryStats[], count: number = 10): BreweryStats[] {

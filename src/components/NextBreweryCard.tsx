@@ -1,19 +1,23 @@
 import { BreweryStats } from '../types';
-import { formatDate } from '../utils';
+import { formatDate, getNextThursday } from '../utils';
 import { MapPin } from 'lucide-react';
 
 interface NextBreweryCardProps {
   nextBrewery: string;
   breweryStats: BreweryStats[];
+  date: string;
 }
 
-export default function NextBreweryCard({ nextBrewery, breweryStats }: NextBreweryCardProps) {
+export default function NextBreweryCard({ nextBrewery, breweryStats, date }: NextBreweryCardProps) {
   // Check if nextBrewery matches a brewery name
   const matchingBrewery = breweryStats.find(
     brewery => brewery.name.toLowerCase() === nextBrewery.toLowerCase().trim()
   );
 
   const isLimerick = !matchingBrewery;
+  
+  // Calculate the next Thursday after the visit date
+  const nextThursdayDate = getNextThursday(date);
 
   return (
     <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-6 shadow-lg">
@@ -23,7 +27,7 @@ export default function NextBreweryCard({ nextBrewery, breweryStats }: NextBrewe
         </div>
         <div className="flex-1">
           <h2 className="text-lg font-bold text-blue-900 uppercase tracking-wide mb-1">
-            Where Next?
+            Where Next? ({formatDate(nextThursdayDate)})
           </h2>
           <div className="h-1 w-16 bg-blue-600 rounded-full"></div>
         </div>
