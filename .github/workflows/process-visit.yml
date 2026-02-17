@@ -33,7 +33,42 @@ jobs:
           else
             echo "is_visit=false" >> $GITHUB_OUTPUT
             echo "This is NOT a visit issue - skipping"
+            echo "Title check: $(echo "$TITLE" | grep -qi "\[Visit\]" && echo "MATCH" || echo "NO MATCH")"
+            echo "Label check: $(echo "$LABELS" | grep -qi '"name".*"visit"' && echo "MATCH" || echo "NO MATCH")"
           fi
+      
+      - name: Comment on issue (always)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const isVisit = '${{ steps.check.outputs.is_visit }}' === 'true';
+            const title = context.payload.issue.title;
+            const labels = context.payload.issue.labels.map(l => l.name).join(', ');
+            
+            if (isVisit) {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '🔄 Processing visit issue...\n\n' +
+                      `- **Title:** ${title}\n` +
+                      `- **Labels:** ${labels || '(none)'}\n` +
+                      `- **Status:** Identified as visit issue - processing will continue.`
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '⚠️ This issue was not identified as a visit issue.\n\n' +
+                      `- **Title:** ${title}\n` +
+                      `- **Labels:** ${labels || '(none)'}\n` +
+                      `- **Status:** Skipping processing.\n\n` +
+                      'To process this as a visit, ensure:\n' +
+                      '1. The title starts with "[Visit]" (case-insensitive), OR\n' +
+                      '2. The issue has a "visit" label'
+              });
+            }
       
       - name: Checkout repository
         if: steps.check.outputs.is_visit == 'true'
@@ -172,8 +207,16 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add public/data.json dist/data.json
-          git diff --staged --quiet || git commit -m "Add visit: ${{ steps.parse.outputs.date }} - ${{ steps.parse.outputs.brewery }}"
-          git push
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit - data.json may already contain this visit"
+          else
+            echo "Committing changes..."
+            git commit -m "Add visit: ${{ steps.parse.outputs.date }} - ${{ steps.parse.outputs.brewery }}"
+            git push
+            echo "Changes committed and pushed successfully"
+          fi
       
       - name: Deploy to Dreamhost via FTP
         if: steps.check.outputs.is_visit == 'true'
@@ -186,28 +229,41 @@ jobs:
           local-dir: ./dist/
           dangerous-clean-slate: false
       
-      - name: Comment on issue
+      - name: Comment on issue with results
         if: steps.check.outputs.is_visit == 'true'
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.createComment({
+            const date = '${{ steps.parse.outputs.date }}';
+            const brewery = '${{ steps.parse.outputs.brewery }}';
+            const nextBrewery = '${{ steps.parse.outputs.next_brewery }}';
+            const notes = '${{ steps.parse.outputs.notes }}';
+            
+            let body = '✅ Visit added and deployed successfully!\n\n';
+            body += `- **Date:** ${date}\n`;
+            body += `- **Brewery:** ${brewery}\n`;
+            if (nextBrewery && nextBrewery.trim() !== '') {
+              body += `- **Next Brewery:** ${nextBrewery}\n`;
+            } else {
+              body += '- **Next Brewery:** (not provided for historical data)\n';
+            }
+            if (notes && notes.trim() !== '') {
+              body += `- **Notes:** ${notes}\n`;
+            }
+            
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '✅ Visit added and deployed successfully!\n\n' +
-                    `- **Date:** ${{ steps.parse.outputs.date }}\n` +
-                    `- **Brewery:** ${{ steps.parse.outputs.brewery }}\n` +
-                    (${{ steps.parse.outputs.next_brewery }} ? `- **Next Brewery:** ${{ steps.parse.outputs.next_brewery }}\n` : '- **Next Brewery:** (not provided for historical data)\n') +
-                    (${{ steps.parse.outputs.notes }} ? `- **Notes:** ${{ steps.parse.outputs.notes }}\n` : '')
-            })
+              body: body
+            });
             
-            github.rest.issues.update({
+            await github.rest.issues.update({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'closed'
-            })
+            });
         continue-on-error: true
       
       - name: Handle errors

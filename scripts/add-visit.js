@@ -96,6 +96,13 @@ if (existingIndex !== -1) {
 
 // Write back to both public and dist
 try {
+  // Ensure dist directory exists
+  const distDir = join(__dirname, '../dist');
+  if (!fs.existsSync(distDir)) {
+    fs.mkdirSync(distDir, { recursive: true });
+    console.log('Created dist directory');
+  }
+  
   fs.writeFileSync(dataPath, JSON.stringify(data, null, 2) + '\n');
   fs.writeFileSync(distDataPath, JSON.stringify(data, null, 2) + '\n');
   console.log(`✅ ${existingIndex !== -1 ? 'Updated' : 'Added'} visit: ${date} - ${brewery}`);
