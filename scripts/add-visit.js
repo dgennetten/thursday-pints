@@ -69,8 +69,10 @@ if (existingIndex !== -1) {
     delete data[existingIndex].nextBrewery;
   }
   
-  if (notes && notes.trim()) {
-    data[existingIndex].notes = notes.trim();
+  // Filter out "_No response_" and empty values
+  const cleanNotes = notes && notes.trim() && notes.trim() !== '_No response_' ? notes.trim() : null;
+  if (cleanNotes) {
+    data[existingIndex].notes = cleanNotes;
   } else if (data[existingIndex].notes) {
     delete data[existingIndex].notes;
   }
@@ -86,8 +88,10 @@ if (existingIndex !== -1) {
     newVisit.nextBrewery = nextBrewery.trim();
   }
 
-  if (notes && notes.trim()) {
-    newVisit.notes = notes.trim();
+  // Filter out "_No response_" and empty values
+  const cleanNotes = notes && notes.trim() && notes.trim() !== '_No response_' ? notes.trim() : null;
+  if (cleanNotes) {
+    newVisit.notes = cleanNotes;
   }
 
   // Add to beginning of array (newest first)

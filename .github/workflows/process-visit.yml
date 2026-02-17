@@ -108,8 +108,9 @@ jobs:
             // Remove markdown formatting and clean up
             value = value.replace(/\*\*/g, '').replace(/^[-*]\s*/, '').trim();
             
-            // Handle "No response" or empty values
-            if (!value || value === 'No response' || value === 'N/A') {
+            // Handle "No response", "_No response_", or empty values (case-insensitive)
+            const lowerValue = value.toLowerCase();
+            if (!value || lowerValue === 'no response' || lowerValue === '_no response_' || lowerValue === 'n/a') {
               return null;
             }
             
@@ -247,6 +248,25 @@ jobs:
             exit 1
           fi
       
+      - name: Show file diff
+        if: steps.check.outputs.is_visit == 'true'
+        run: |
+          echo "Checking for changes in data.json..."
+          git add public/data.json
+          if ! git diff --staged --quiet; then
+            echo "Changes detected:"
+            git diff --staged public/data.json | head -50
+          else
+            echo "No git changes detected - file content is the same"
+            echo "This can happen if the visit already exists with identical data"
+            echo "Showing current entry for this date:"
+            node -e "
+              const data = require('./public/data.json');
+              const visit = data.find(v => v.date === '${{ steps.parse.outputs.date }}');
+              console.log(JSON.stringify(visit, null, 2));
+            "
+          fi
+      
       - name: Commit changes
         if: steps.check.outputs.is_visit == 'true'
         run: |
@@ -256,7 +276,8 @@ jobs:
           
           # Check if there are changes to commit
           if git diff --staged --quiet; then
-            echo "No changes to commit - data.json may already contain this visit"
+            echo "No changes to commit - visit may already exist with same data"
+            echo "File will still be deployed to ensure server is in sync"
           else
             echo "Committing changes..."
             git commit -m "Add visit: ${{ steps.parse.outputs.date }} - ${{ steps.parse.outputs.brewery }}"
