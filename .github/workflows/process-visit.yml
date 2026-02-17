@@ -297,6 +297,7 @@ jobs:
       - name: Deploy to Dreamhost via FTP
         if: steps.check.outputs.is_visit == 'true'
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        id: ftp-deploy
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
@@ -304,11 +305,87 @@ jobs:
           server-dir: /public_html/
           local-dir: ./dist/
           dangerous-clean-slate: false
+          dry-run: false
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/.DS_Store
+          log-level: verbose
+          state-name: .ftp-deploy-sync-state.json
+      
+      - name: Install FTP client
+        if: steps.check.outputs.is_visit == 'true'
+        run: npm install basic-ftp --no-save
+      
+      - name: Force upload data.json via FTP
+        if: steps.check.outputs.is_visit == 'true'
+        run: |
+          echo "Force uploading data.json to ensure it's updated on server..."
+          node << 'EOF'
+          const ftp = require('basic-ftp');
+          const fs = require('fs');
+          const path = require('path');
+          
+          async function uploadFile() {
+            const client = new ftp.Client();
+            try {
+              await client.access({
+                host: process.env.FTP_SERVER,
+                user: process.env.FTP_USERNAME,
+                password: process.env.FTP_PASSWORD,
+                secure: false
+              });
+              
+              console.log('Connected to FTP server');
+              
+              // Change to public_html directory
+              await client.cd('/public_html');
+              console.log('Changed to /public_html directory');
+              
+              // Upload data.json
+              const localFile = path.join(process.cwd(), 'dist/data.json');
+              console.log(`Uploading ${localFile} to /public_html/data.json`);
+              
+              await client.uploadFrom(localFile, 'data.json');
+              console.log('✅ data.json uploaded successfully');
+              
+              // Verify file size
+              const stats = await client.size('data.json');
+              const localStats = fs.statSync(localFile);
+              console.log(`Server file size: ${stats} bytes`);
+              console.log(`Local file size: ${localStats.size} bytes`);
+              
+              if (stats === localStats.size) {
+                console.log('✅ File sizes match - upload verified');
+              } else {
+                console.log('⚠️  File sizes do not match - upload may have failed');
+              }
+              
+            } catch (error) {
+              console.error('❌ FTP upload error:', error.message);
+              process.exit(1);
+            } finally {
+              client.close();
+            }
+          }
+          
+          uploadFile();
+          EOF
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      
+      - name: Verify deployment
+        if: steps.check.outputs.is_visit == 'true'
+        run: |
+          echo "Deployment completed. Please verify the file on the server."
+          echo "Expected file hash (MD5): $(md5sum dist/data.json | cut -d' ' -f1)"
+          echo "File size: $(wc -c < dist/data.json) bytes"
+          echo ""
+          echo "To verify on server, check: https://your-site.com/data.json"
+          echo "The file should contain the visit for: ${{ steps.parse.outputs.date }}"
       
       - name: Comment on issue with results
         if: steps.check.outputs.is_visit == 'true'
