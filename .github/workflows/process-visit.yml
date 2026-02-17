@@ -285,6 +285,15 @@ jobs:
             echo "Changes committed and pushed successfully"
           fi
       
+      - name: Verify data.json before deploy
+        if: steps.check.outputs.is_visit == 'true'
+        run: |
+          echo "Verifying dist/data.json before FTP deploy..."
+          echo "File size: $(wc -c < dist/data.json) bytes"
+          echo "File hash (MD5): $(md5sum dist/data.json | cut -d' ' -f1)"
+          echo "First few lines:"
+          head -5 dist/data.json
+      
       - name: Deploy to Dreamhost via FTP
         if: steps.check.outputs.is_visit == 'true'
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
@@ -295,6 +304,11 @@ jobs:
           server-dir: /public_html/
           local-dir: ./dist/
           dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
       
       - name: Comment on issue with results
         if: steps.check.outputs.is_visit == 'true'
@@ -317,6 +331,10 @@ jobs:
             if (notes && notes.trim() !== '') {
               body += `- **Notes:** ${notes}\n`;
             }
+            body += '\n💡 **Note:** If you don\'t see the changes on the website, try a hard refresh:\n';
+            body += '- **Windows/Linux:** Ctrl + F5 or Ctrl + Shift + R\n';
+            body += '- **Mac:** Cmd + Shift + R\n';
+            body += 'The app uses cache-busting, but your browser may have cached the old file.';
             
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
