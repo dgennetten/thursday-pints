@@ -8,27 +8,50 @@ on:
 
 jobs:
   process-visit:
-    # Only run if issue has 'visit' label OR title starts with "[Visit]"
-    if: (contains(github.event.issue.labels.*.name, 'visit') || startsWith(github.event.issue.title, '[Visit]')) && github.event.action != 'deleted'
+    # Run for all issue events except deleted
+    if: github.event_name == 'issues' && github.event.action != 'deleted'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
     
     steps:
+      - name: Check if issue is a visit issue
+        id: check
+        run: |
+          TITLE="${{ github.event.issue.title }}"
+          LABELS="${{ toJSON(github.event.issue.labels) }}"
+          
+          echo "Issue title: $TITLE"
+          echo "Issue labels: $LABELS"
+          echo "Action: ${{ github.event.action }}"
+          
+          # Check if title contains "[Visit]" or has 'visit' label
+          if echo "$TITLE" | grep -qi "\[Visit\]" || echo "$LABELS" | grep -qi '"name".*"visit"'; then
+            echo "is_visit=true" >> $GITHUB_OUTPUT
+            echo "This is a visit issue - proceeding"
+          else
+            echo "is_visit=false" >> $GITHUB_OUTPUT
+            echo "This is NOT a visit issue - skipping"
+          fi
+      
       - name: Checkout repository
+        if: steps.check.outputs.is_visit == 'true'
         uses: actions/checkout@v4
       
       - name: Setup Node.js
+        if: steps.check.outputs.is_visit == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
       
       - name: Install dependencies
+        if: steps.check.outputs.is_visit == 'true'
         run: npm ci
       
       - name: Parse issue data
+        if: steps.check.outputs.is_visit == 'true'
         id: parse
         run: |
           # Use Node.js to parse GitHub issue form data more reliably
@@ -127,6 +150,7 @@ jobs:
         continue-on-error: false
       
       - name: Update data.json
+        if: steps.check.outputs.is_visit == 'true'
         run: |
           # Build command with optional next-brewery
           CMD="node scripts/add-visit.js --date \"${{ steps.parse.outputs.date }}\" --brewery \"${{ steps.parse.outputs.brewery }}\""
@@ -139,9 +163,11 @@ jobs:
           eval $CMD
       
       - name: Build application
+        if: steps.check.outputs.is_visit == 'true'
         run: npm run build
       
       - name: Commit changes
+        if: steps.check.outputs.is_visit == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -150,6 +176,7 @@ jobs:
           git push
       
       - name: Deploy to Dreamhost via FTP
+        if: steps.check.outputs.is_visit == 'true'
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -160,6 +187,7 @@ jobs:
           dangerous-clean-slate: false
       
       - name: Comment on issue
+        if: steps.check.outputs.is_visit == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -183,7 +211,7 @@ jobs:
         continue-on-error: true
       
       - name: Handle errors
-        if: failure()
+        if: failure() && steps.check.outputs.is_visit == 'true'
         uses: actions/github-script@v7
         with:
           script: |
