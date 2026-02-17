@@ -302,7 +302,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /public_html/
+          server-dir: /thursdaypints.com/
           local-dir: ./dist/
           dangerous-clean-slate: false
           dry-run: false
@@ -339,13 +339,30 @@ jobs:
               
               console.log('Connected to FTP server');
               
-              // Change to public_html directory
-              await client.cd('/public_html');
-              console.log('Changed to /public_html directory');
+              // Check root directory structure
+              const rootPwd = await client.pwd();
+              console.log('FTP root directory:', rootPwd);
+              
+              // List root to see available directories
+              const rootList = await client.list();
+              console.log('Root directory contents:', rootList.map(f => `${f.name}${f.isDirectory ? '/' : ''}`).join(', '));
+              
+              // Use the domain-specific directory
+              const webDir = '/thursdaypints.com';
+              console.log(`Using web directory: ${webDir}`);
+              
+              // Change to web directory
+              await client.cd(webDir);
+              const currentDir = await client.pwd();
+              console.log(`Changed to: ${currentDir}`);
+              
+              // List files to see what's there
+              const files = await client.list();
+              console.log(`Files in ${currentDir}:`, files.map(f => f.name).slice(0, 10).join(', '));
               
               // Upload data.json
               const localFile = path.join(process.cwd(), 'dist/data.json');
-              console.log(`Uploading ${localFile} to /public_html/data.json`);
+              console.log(`\nUploading ${localFile} to ${currentDir}/data.json`);
               
               await client.uploadFrom(localFile, 'data.json');
               console.log('✅ data.json uploaded successfully');
@@ -355,6 +372,7 @@ jobs:
               const localStats = fs.statSync(localFile);
               console.log(`Server file size: ${stats} bytes`);
               console.log(`Local file size: ${localStats.size} bytes`);
+              console.log(`Full server path: ${currentDir}/data.json`);
               
               if (stats === localStats.size) {
                 console.log('✅ File sizes match - upload verified');
@@ -364,6 +382,7 @@ jobs:
               
             } catch (error) {
               console.error('❌ FTP upload error:', error.message);
+              console.error(error.stack);
               process.exit(1);
             } finally {
               client.close();
@@ -376,6 +395,59 @@ jobs:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      
+      - name: Verify file via HTTP and compare
+        if: steps.check.outputs.is_visit == 'true'
+        run: |
+          echo "Checking what the web server is actually serving..."
+          # Wait a moment for any server-side caching to clear
+          sleep 2
+          
+          # Try to download the file via HTTP to see what's being served
+          curl -s -H "Cache-Control: no-cache" https://thursdaypints.com/data.json > http-data.json || echo "Failed to download via HTTP"
+          
+          if [ -f "http-data.json" ]; then
+            echo "File downloaded from web server:"
+            echo "Size: $(wc -c < http-data.json) bytes"
+            echo "MD5: $(md5sum http-data.json | cut -d' ' -f1)"
+            echo ""
+            echo "Local file (what we uploaded):"
+            echo "Size: $(wc -c < dist/data.json) bytes"
+            echo "MD5: $(md5sum dist/data.json | cut -d' ' -f1)"
+            echo ""
+            
+            # Compare MD5 hashes
+            HTTP_HASH=$(md5sum http-data.json | cut -d' ' -f1)
+            LOCAL_HASH=$(md5sum dist/data.json | cut -d' ' -f1)
+            
+            if [ "$HTTP_HASH" = "$LOCAL_HASH" ]; then
+              echo "✅ HTTP file matches local file - web server is serving correct file!"
+            else
+              echo "❌ HTTP file does NOT match local file!"
+              echo "This means the web server is serving a different/cached version."
+              echo ""
+              echo "Checking for visit entry in HTTP file:"
+              if grep -q "\"date\": \"${{ steps.parse.outputs.date }}\"" http-data.json; then
+                echo "✅ Found visit entry for ${{ steps.parse.outputs.date }}"
+                node -e "
+                  const data = require('./http-data.json');
+                  const visit = data.find(v => v.date === '${{ steps.parse.outputs.date }}');
+                  console.log('HTTP file visit entry:', JSON.stringify(visit, null, 2));
+                "
+              else
+                echo "❌ Visit entry NOT found in HTTP file!"
+                echo "The web server is serving old/cached data."
+                echo ""
+                echo "First entry in HTTP file:"
+                node -e "
+                  const data = require('./http-data.json');
+                  console.log(JSON.stringify(data[0], null, 2));
+                "
+              fi
+            fi
+          else
+            echo "⚠️  Could not download file via HTTP"
+          fi
       
       - name: Verify server file after upload
         if: steps.check.outputs.is_visit == 'true'
@@ -396,7 +468,36 @@ jobs:
                 secure: false
               });
               
-              await client.cd('/public_html');
+              // Check current directory
+              const pwd = await client.pwd();
+              console.log('Current FTP directory:', pwd);
+              
+              // List root directory to see structure
+              console.log('\nListing root directory:');
+              const rootFiles = await client.list();
+              console.log('Root files:', rootFiles.map(f => f.name).join(', '));
+              
+              // Try to find public_html or www or similar
+              const publicDirs = rootFiles.filter(f => f.isDirectory && (f.name.includes('public') || f.name.includes('www') || f.name === 'htdocs'));
+              if (publicDirs.length > 0) {
+                console.log('Found potential web directories:', publicDirs.map(f => f.name).join(', '));
+              }
+              
+              await client.cd('/thursdaypints.com');
+              const newPwd = await client.pwd();
+              console.log('Changed to:', newPwd);
+              
+              // List files in directory to verify location
+              console.log('\nListing files in /thursdaypints.com:');
+              const files = await client.list();
+              const dataJsonFile = files.find(f => f.name === 'data.json');
+              if (dataJsonFile) {
+                console.log(`Found data.json: size=${dataJsonFile.size} bytes, modified=${dataJsonFile.rawModifiedAt || 'unknown'}`);
+                console.log('Full path should be:', newPwd + '/data.json');
+              } else {
+                console.log('⚠️  WARNING: data.json not found in file list!');
+                console.log('Files in directory:', files.map(f => f.name).join(', '));
+              }
               
               // Download the file from server
               const tempFile = path.join(process.cwd(), 'server-data.json');
@@ -415,11 +516,30 @@ jobs:
               const localVisit = localData.find(v => v.date === visitDate);
               const serverVisit = serverData.find(v => v.date === visitDate);
               
-              console.log('Local visit:', JSON.stringify(localVisit, null, 2));
+              console.log('\nLocal visit:', JSON.stringify(localVisit, null, 2));
               console.log('Server visit:', JSON.stringify(serverVisit, null, 2));
               
-              if (JSON.stringify(localVisit) === JSON.stringify(serverVisit)) {
-                console.log('✅ Server file matches local file - upload successful!');
+              // Compare full file content
+              const localHash = require('crypto').createHash('md5').update(localContent).digest('hex');
+              const serverHash = require('crypto').createHash('md5').update(serverContent).digest('hex');
+              console.log('\nLocal file MD5:', localHash);
+              console.log('Server file MD5:', serverHash);
+              
+              if (localHash === serverHash) {
+                console.log('✅ Server file content EXACTLY matches local file - upload confirmed!');
+                console.log('📁 File location: /thursdaypints.com/data.json');
+                console.log('⚠️  IMPORTANT: If the web server shows old content, possible causes:');
+                console.log('   1. File uploaded to wrong directory (check if web root is different)');
+                console.log('   2. CDN or caching layer in front of the file');
+                console.log('   3. .htaccess redirect pointing to different file');
+                console.log('   4. Web server serving from different location');
+                console.log('\n💡 Troubleshooting steps:');
+                console.log('   1. Check FTP root directory structure');
+                console.log('   2. Verify web server document root matches /thursdaypints.com/');
+                console.log('   3. Check for .htaccess files that might redirect');
+                console.log('   4. Clear any CDN cache if applicable');
+              } else if (JSON.stringify(localVisit) === JSON.stringify(serverVisit)) {
+                console.log('✅ Visit entry matches, but file has minor differences (whitespace/formatting)');
               } else {
                 console.log('❌ Server file does NOT match local file!');
                 console.log('This suggests the file was not properly uploaded or was overwritten.');
@@ -431,6 +551,7 @@ jobs:
               
             } catch (error) {
               console.error('❌ Verification error:', error.message);
+              console.error(error.stack);
               process.exit(1);
             } finally {
               client.close();
