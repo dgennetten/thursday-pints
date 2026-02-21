@@ -94,27 +94,12 @@ function App() {
     }
   };
 
-  // Scroll buttons to just below top (one button height) when viewMode changes after user interaction
+  // Update content container height when viewMode changes
   useEffect(() => {
-    if (!hasUserInteracted.current) {
-      return;
-    }
-    
-    if (buttonsContainerRef.current) {
-      const rect = buttonsContainerRef.current.getBoundingClientRect();
-      const buttonHeight = rect.height;
-      const currentScrollY = window.scrollY;
-      const targetScrollY = currentScrollY + rect.top - buttonHeight;
-      
-      window.scrollTo({
-        top: targetScrollY,
-        behavior: 'smooth'
-      });
-      
-      // Update content container height after scroll completes
+    if (showMap) {
       setTimeout(() => {
         updateContentHeight();
-      }, 500); // Wait for smooth scroll to complete
+      }, 100);
     }
   }, [viewMode]);
 
@@ -156,8 +141,11 @@ function App() {
   }, [allBreweryStats, breweriesData]);
 
   const displayedBreweries = useMemo(() => {
+    // Filter out breweries with zero visits
+    const breweriesWithVisits = breweriesWithLocation.filter(b => b.visitCount > 0);
+    
     let sorted = viewMode === 'breweries'
-      ? [...breweriesWithLocation].sort((a, b) => {
+      ? [...breweriesWithVisits].sort((a, b) => {
           // Handle breweries with no visits (empty lastVisitDate)
           if (!a.lastVisitDate && !b.lastVisitDate) return 0;
           if (!a.lastVisitDate) return 1; // No visits go to end
@@ -168,8 +156,8 @@ function App() {
           return dateA - dateB; // Oldest first
         })
       : viewMode === 'ranked'
-      ? [...breweriesWithLocation].sort((a, b) => b.visitCount - a.visitCount)
-      : [...breweriesWithLocation].sort((a, b) => b.visitCount - a.visitCount);
+      ? [...breweriesWithVisits].sort((a, b) => b.visitCount - a.visitCount)
+      : [...breweriesWithVisits].sort((a, b) => b.visitCount - a.visitCount);
     
     return sorted;
   }, [breweriesWithLocation, viewMode]);
@@ -314,25 +302,10 @@ function App() {
               <button
                 onClick={() => {
                   setShowMap(!showMap);
-                  // Scroll buttons to just below top (one button height) after a brief delay
+                  // Update content height after map toggle
                   setTimeout(() => {
-                    if (buttonsContainerRef.current) {
-                      const rect = buttonsContainerRef.current.getBoundingClientRect();
-                      const buttonHeight = rect.height;
-                      const currentScrollY = window.scrollY;
-                      const targetScrollY = currentScrollY + rect.top - buttonHeight;
-                      
-                      window.scrollTo({
-                        top: targetScrollY,
-                        behavior: 'smooth'
-                      });
-                      
-                      // Update content height after scroll completes
-                      setTimeout(() => {
-                        updateContentHeight();
-                      }, 500);
-                    }
-                  }, 0);
+                    updateContentHeight();
+                  }, 100);
                 }}
                 className={`flex items-center gap-2 px-4 py-2 text-lg font-medium rounded-lg transition-colors ${
                   showMap
