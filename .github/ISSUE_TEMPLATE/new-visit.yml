@@ -8,7 +8,7 @@ body:
     attributes:
       label: Visit Date
       description: Date of the visit (YYYY-MM-DD format, e.g., 2026-02-12). Leave blank to default to the next Thursday.
-      placeholder: "2026-02-12"
+      placeholder: "YYYY-MM-DD"
     validations:
       required: false
   - type: input
