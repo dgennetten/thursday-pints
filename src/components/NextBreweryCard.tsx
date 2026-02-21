@@ -34,9 +34,9 @@ export default function NextBreweryCard({ nextBrewery, breweryStats, date }: Nex
       </div>
 
       {isLimerick ? (
-        <div className="pl-11">
-          <blockquote className="text-xl sm:text-2xl md:text-3xl italic text-gray-800 leading-relaxed whitespace-pre-line">
-            "{nextBrewery}"
+        <div className="pl-[0.6875rem]">
+          <blockquote className="text-lg sm:text-xl md:text-2xl italic text-gray-800 leading-relaxed whitespace-pre-line">
+            "{nextBrewery.replace(/\\n/g, '\n')}"
           </blockquote>
         </div>
       ) : (

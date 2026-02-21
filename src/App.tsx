@@ -7,7 +7,7 @@ import ToggleButton from './components/ToggleButton';
 import BreweryMap from './components/BreweryMap';
 import WelcomePopup from './components/WelcomePopup';
 import NextBreweryCard from './components/NextBreweryCard';
-import { RefreshCw, Route, Building2, Star, Map as MapIcon } from 'lucide-react';
+import { RefreshCw, Route, Beer, Star, Map as MapIcon } from 'lucide-react';
 import { loadVisitsFromPublicJSON } from './services/spreadsheetService';
 import { loadBreweriesFromJSON } from './services/breweryService';
 import packageJson from '../package.json';
@@ -142,7 +142,12 @@ function App() {
 
   const displayedBreweries = useMemo(() => {
     // Filter out breweries with zero visits
-    const breweriesWithVisits = breweriesWithLocation.filter(b => b.visitCount > 0);
+    let breweriesWithVisits = breweriesWithLocation.filter(b => b.visitCount > 0);
+    
+    // Filter out closed breweries when in 'breweries' mode (By Last Visit)
+    if (viewMode === 'breweries') {
+      breweriesWithVisits = breweriesWithVisits.filter(b => !b.isClosed);
+    }
     
     let sorted = viewMode === 'breweries'
       ? [...breweriesWithVisits].sort((a, b) => {
@@ -290,7 +295,7 @@ function App() {
                   options={[
                     { label: 'Tour', value: 'tour', icon: Route },
                     { label: 'Ranked', value: 'ranked', icon: Star },
-                    { label: 'Breweries', value: 'breweries', icon: Building2 }
+                    { label: 'Breweries', value: 'breweries', icon: Beer }
                   ]}
                   selected={viewMode}
                   onChange={(value) => {
@@ -314,7 +319,6 @@ function App() {
                 }`}
               >
                 <MapIcon className="w-6 h-6" />
-                Map
               </button>
             </div>
 
