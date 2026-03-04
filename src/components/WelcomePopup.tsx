@@ -97,20 +97,6 @@ export default function WelcomePopup({ version, onClose }: WelcomePopupProps) {
             dangerouslySetInnerHTML={{ __html: markdownToHtml(instructions) }}
           />
 
-          {/* Don't Show Again Checkbox */}
-          <div className="mt-6 flex items-center">
-            <input
-              type="checkbox"
-              id="dontShowAgain"
-              checked={dontShowAgain}
-              onChange={(e) => setDontShowAgain(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label htmlFor="dontShowAgain" className="ml-2 text-sm text-gray-600">
-              Don't show this again
-            </label>
-          </div>
-
           {/* Version and Feedback */}
           <div className="mt-6 pt-4 border-t border-gray-200 text-center">
             <p className="text-xs text-gray-500">
@@ -119,14 +105,24 @@ export default function WelcomePopup({ version, onClose }: WelcomePopupProps) {
           </div>
         </div>
 
-        {/* Close Button */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4">
+        {/* Close Button and Don't Show Again */}
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between gap-4">
           <button
             onClick={handleClose}
-            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium shrink-0"
           >
             Get Started
           </button>
+          <label htmlFor="dontShowAgain" className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer shrink-0">
+            <input
+              type="checkbox"
+              id="dontShowAgain"
+              checked={dontShowAgain}
+              onChange={(e) => setDontShowAgain(e.target.checked)}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            Don't show this again
+          </label>
         </div>
       </div>
     </div>
