@@ -446,5 +446,12 @@
     "latitude": 40.7019,
     "longitude": -105.0086,
     "status": "Open"
+  },
+  {
+    "brewery_name": "Westbound & Down Brewery",
+    "brewery_address": "2755 Dagny Way, Lafayette, CO 80026",
+    "latitude": 39.9918,
+    "longitude": -105.0897,
+    "status": "Open"
   }
 ]
