@@ -12,6 +12,7 @@ node_modules
 
 # Build outputs
 dist
+visit-params.json
 dist-ssr
 *.local
 

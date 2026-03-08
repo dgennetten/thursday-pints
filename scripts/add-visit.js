@@ -5,17 +5,32 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Parse command line arguments
+// Parse command line arguments (or read from JSON file to avoid shell quoting issues)
 const args = process.argv.slice(2);
 const getArg = (name) => {
   const index = args.indexOf(`--${name}`);
   return index !== -1 && args[index + 1] ? args[index + 1] : null;
 };
 
-const date = getArg('date');
-const brewery = getArg('brewery');
-const nextBrewery = getArg('next-brewery');
-const notes = getArg('notes');
+let date, brewery, nextBrewery, notes;
+const fromFile = getArg('from-file');
+if (fromFile) {
+  try {
+    const params = JSON.parse(fs.readFileSync(fromFile, 'utf8'));
+    date = params.date || null;
+    brewery = params.brewery || null;
+    nextBrewery = params.next_brewery && params.next_brewery.trim() ? params.next_brewery.trim() : null;
+    notes = params.notes && params.notes.trim() ? params.notes.trim() : null;
+  } catch (err) {
+    console.error(`Error reading --from-file ${fromFile}:`, err.message);
+    process.exit(1);
+  }
+} else {
+  date = getArg('date');
+  brewery = getArg('brewery');
+  nextBrewery = getArg('next-brewery');
+  notes = getArg('notes');
+}
 
 if (!date || !brewery) {
   console.error('Missing required arguments: date, brewery');

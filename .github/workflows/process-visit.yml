@@ -158,6 +158,7 @@ jobs:
           
           // Output to GitHub Actions
           const fs = require('fs');
+          const path = require('path');
           const outputFile = process.env.GITHUB_OUTPUT;
           if (outputFile) {
             fs.appendFileSync(outputFile, `date=${date}\n`);
@@ -169,13 +170,15 @@ jobs:
               fs.appendFileSync(outputFile, `next_brewery=\n`);
             }
             fs.appendFileSync(outputFile, `notes=${(notes || '').replace(/\n/g, ' ')}\n`);
-          } else {
-            // Fallback for testing
-            console.log(`::set-output name=date::${date}`);
-            console.log(`::set-output name=brewery::${brewery}`);
-            console.log(`::set-output name=next_brewery::${nextBrewery}`);
-            console.log(`::set-output name=notes::${notes || ''}`);
           }
+          // Write params to JSON file so Update step can call add-visit.js without bash quoting issues
+          const paramsPath = path.join(process.cwd(), 'visit-params.json');
+          fs.writeFileSync(paramsPath, JSON.stringify({
+            date,
+            brewery,
+            next_brewery: nextBrewery || '',
+            notes: notes || ''
+          }, null, 2));
           
           console.log('Parsed values:');
           console.log(`  Date: ${date}`);
@@ -198,15 +201,8 @@ jobs:
             echo "Current data.json size: $OLD_SIZE bytes"
           fi
           
-          # Build command with optional next-brewery
-          CMD="node scripts/add-visit.js --date \"${{ steps.parse.outputs.date }}\" --brewery \"${{ steps.parse.outputs.brewery }}\""
-          if [ -n "${{ steps.parse.outputs.next_brewery }}" ]; then
-            CMD="$CMD --next-brewery \"${{ steps.parse.outputs.next_brewery }}\""
-          fi
-          if [ -n "${{ steps.parse.outputs.notes }}" ]; then
-            CMD="$CMD --notes \"${{ steps.parse.outputs.notes }}\""
-          fi
-          eval $CMD
+          # Use params file so values with quotes (e.g. TBD "going south") never touch bash
+          node scripts/add-visit.js --from-file visit-params.json
           
           # Check new file size
           if [ -f "public/data.json" ]; then
