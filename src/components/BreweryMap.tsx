@@ -1,9 +1,10 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 // Fix for default marker icons in React-Leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -89,6 +90,61 @@ function MapUpdater({ center, zoom, selectedBrewery, breweries }: { center: [num
   return null;
 }
 
+// Invalidate map size and re-fit bounds when entering/exiting fullscreen
+function MapFullscreenHandler({ breweries }: { breweries: BreweryWithLocation[] }) {
+  const map = useMap();
+  const breweriesRef = useRef(breweries);
+  breweriesRef.current = breweries;
+  const pendingRefitRef = useRef(false);
+  const fallbackRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    const refitToBounds = () => {
+      map.invalidateSize();
+      const withLocation = breweriesRef.current.filter(b => b.lat != null && b.lng != null);
+      if (withLocation.length > 0) {
+        const bounds = withLocation.map(b => [b.lat!, b.lng!] as [number, number]);
+        map.fitBounds(bounds, { padding: [20, 20] });
+      }
+      pendingRefitRef.current = false;
+    };
+
+    const handleFullscreenChange = () => {
+      pendingRefitRef.current = true;
+      // Fallback: ResizeObserver can fire before layout completes; run refit after a delay
+      const fallback = setTimeout(() => {
+        if (pendingRefitRef.current) {
+          pendingRefitRef.current = false;
+          refitToBounds();
+        }
+      }, 500);
+      fallbackRef.current = fallback;
+    };
+
+    const container = map.getContainer();
+    const resizeObserver = new ResizeObserver(() => {
+      if (pendingRefitRef.current) {
+        clearTimeout(fallbackRef.current);
+        fallbackRef.current = undefined;
+        pendingRefitRef.current = false;
+        requestAnimationFrame(() => {
+          requestAnimationFrame(refitToBounds);
+        });
+      }
+    });
+    resizeObserver.observe(container);
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      resizeObserver.disconnect();
+      clearTimeout(fallbackRef.current);
+    };
+  }, [map]);
+  return null;
+}
+
 interface BreweryMapProps {
   breweries: BreweryWithLocation[];
   center: [number, number];
@@ -98,6 +154,30 @@ interface BreweryMapProps {
 }
 
 export default function BreweryMap({ breweries, center, zoom, viewMode, selectedBrewery }: BreweryMapProps) {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = useCallback(async () => {
+    if (!mapContainerRef.current) return;
+    try {
+      if (!document.fullscreenElement) {
+        await mapContainerRef.current.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch {
+      // Fullscreen not supported or blocked
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   // Filter breweries that have location data
   const breweriesWithLocation = breweries.filter(b => b.lat != null && b.lng != null);
   
@@ -140,7 +220,10 @@ export default function BreweryMap({ breweries, center, zoom, viewMode, selected
   }
 
   return (
-    <div className="h-full w-full rounded-lg overflow-hidden border border-gray-200">
+    <div
+      ref={mapContainerRef}
+      className="h-full w-full rounded-lg overflow-hidden border border-gray-200 relative"
+    >
       <MapContainer
         center={center}
         zoom={zoom}
@@ -153,6 +236,7 @@ export default function BreweryMap({ breweries, center, zoom, viewMode, selected
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapUpdater center={center} zoom={zoom} selectedBrewery={selectedBrewery} breweries={breweriesWithLocation} />
+        <MapFullscreenHandler breweries={breweriesWithLocation} />
         {breweriesWithLocation.map((brewery, index) => {
           if (!brewery.lat || !brewery.lng) return null;
           
@@ -194,6 +278,18 @@ export default function BreweryMap({ breweries, center, zoom, viewMode, selected
           );
         })}
       </MapContainer>
+      <button
+        type="button"
+        onClick={toggleFullscreen}
+        className="absolute top-2 right-2 z-[1000] p-2 bg-white/90 hover:bg-white rounded-lg shadow-md border border-gray-200 transition-colors"
+        aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen map'}
+      >
+        {isFullscreen ? (
+          <Minimize2 className="w-5 h-5 text-gray-700" />
+        ) : (
+          <Maximize2 className="w-5 h-5 text-gray-700" />
+        )}
+      </button>
     </div>
   );
 }

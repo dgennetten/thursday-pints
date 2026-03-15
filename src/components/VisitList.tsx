@@ -50,7 +50,7 @@ export default function VisitList({
     return dateB - dateA;
   });
 
-  // Filter visits based on filter text (searches names, dates, and notes)
+  // Filter visits based on filter text (searches names, dates, notes, and location)
   const filteredVisits = useMemo(() => {
     let result = sortedVisits;
     
@@ -67,7 +67,11 @@ export default function VisitList({
         // Search in notes
         const notesMatch = visit.notes?.toLowerCase().includes(searchTerm) || false;
         
-        return nameMatch || dateMatch || notesMatch;
+        // Search in address/location (e.g. "Fort Collins", "Loveland")
+        const brewery = breweriesData?.get(visit.breweryName);
+        const addressMatch = brewery?.address?.toLowerCase().includes(searchTerm) || false;
+        
+        return nameMatch || dateMatch || notesMatch || addressMatch;
       });
     }
     
@@ -118,7 +122,7 @@ export default function VisitList({
               type="text"
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              placeholder="Filter"
+              placeholder="Filter by name, date, notes, or location"
               className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 placeholder-gray-400"
             />
             {filterText && (

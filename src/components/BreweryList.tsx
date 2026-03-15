@@ -25,7 +25,7 @@ export default function BreweryList({
   const [filterText, setFilterText] = useState('');
   const [isReversed, setIsReversed] = useState(false);
 
-  // Filter breweries based on filter text (searches names and dates)
+  // Filter breweries based on filter text (searches names, dates, and location)
   const filteredBreweries = useMemo(() => {
     let result = breweries;
     
@@ -45,7 +45,10 @@ export default function BreweryList({
         // Search in visit count
         const countMatch = brewery.visitCount.toString().includes(searchTerm);
         
-        return nameMatch || dateMatch || countMatch;
+        // Search in address/location (e.g. "Fort Collins", "Loveland")
+        const addressMatch = brewery.address?.toLowerCase().includes(searchTerm) || false;
+        
+        return nameMatch || dateMatch || countMatch || addressMatch;
       });
     }
     
@@ -98,7 +101,7 @@ export default function BreweryList({
               type="text"
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              placeholder="Filter"
+              placeholder="Filter by name, date, or location"
               className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 placeholder-gray-400"
             />
             {filterText && (
