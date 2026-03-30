@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-    <title>Thursday Pints - Brewery Tour Tracker</title>
 import { Visit, BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
 import { MapPin, Search, X, Calendar, ChevronsUpDown } from 'lucide-react';
@@ -43,12 +42,17 @@ export default function VisitList({
     breweryVisitCounts.set(visit.breweryName, count + 1);
   });
 
-  // Sort visits by date (newest first)
-  const sortedVisits = [...visits].sort((a, b) => {
-    const dateA = new Date(a.date).getTime();
-    const dateB = new Date(b.date).getTime();
-    return dateB - dateA;
-  });
+  // Sort visits by date (newest first) — must be stable across renders so filteredVisits
+  // and map fitBounds are not recomputed every frame (which reset manual map zoom).
+  const sortedVisits = useMemo(
+    () =>
+      [...visits].sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return dateB - dateA;
+      }),
+    [visits]
+  );
 
   // Filter visits based on filter text (searches names, dates, notes, and location)
   const filteredVisits = useMemo(() => {
