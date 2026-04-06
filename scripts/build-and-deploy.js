@@ -95,14 +95,66 @@ function verifyDist() {
   }
 }
 
+/**
+ * DreamHost FTP often lands in the user's home; full paths like
+ * /home/user/thursdaypints.com/ may 550 while thursdaypints.com/ works.
+ */
+function remoteDirCandidates(preferred) {
+  const raw = (preferred || '/thursdaypints.com/').trim().replace(/\/+/g, '/');
+  const withSlash = raw.endsWith('/') ? raw : `${raw}/`;
+  const noLeading = withSlash.replace(/^\/+/, '');
+  const list = [withSlash];
+
+  const homeRel = withSlash.match(/^\/home\/[^/]+\/(.+)$/);
+  if (homeRel) {
+    const tail = homeRel[1];
+    list.push(tail.endsWith('/') ? tail : `${tail}/`);
+    list.push(`/${tail}`.replace(/\/+/g, '/'));
+  }
+
+  if (noLeading && !list.includes(noLeading.endsWith('/') ? noLeading : `${noLeading}/`)) {
+    list.push(noLeading.endsWith('/') ? noLeading : `${noLeading}/`);
+  }
+
+  const defaults = ['/thursdaypints.com/', 'thursdaypints.com/'];
+  for (const d of defaults) {
+    if (!list.includes(d)) list.push(d);
+  }
+
+  return [...new Set(list)];
+}
+
+async function cdRemoteRoot(client, candidates) {
+  const tried = [];
+  for (const dir of candidates) {
+    const path = dir.endsWith('/') ? dir.slice(0, -1) || '/' : dir;
+    tried.push(path);
+    try {
+      await client.cd(path);
+      if (path !== candidates[0]?.replace(/\/$/, '')) {
+        console.log(`   (used fallback path; update FTP_REMOTE_PATH in .env.local to: ${path}/)\n`);
+      }
+      return path;
+    } catch {
+      // try next
+    }
+  }
+  const pwd = await client.pwd().catch(() => '(unknown)');
+  throw new Error(
+    `Could not cd into any of: ${tried.join(', ')}. Current FTP pwd: ${pwd}. ` +
+      'In DreamHost panel, confirm the domain folder name, or set FTP_REMOTE_PATH to the path `pwd` shows after login plus your site folder (often thursdaypints.com/).'
+  );
+}
+
 // Deploy to FTP server
 async function deploy(env) {
   const serverDir = env.FTP_REMOTE_PATH || '/thursdaypints.com/';
   const localDir = join(projectRoot, 'dist');
-  
+  const cdCandidates = remoteDirCandidates(serverDir);
+
   console.log('🚀 Deploying to FTP server...');
   console.log(`   Server: ${env.SFTP_HOST}`);
-  console.log(`   Remote directory: ${serverDir}`);
+  console.log(`   Remote directory (preferred): ${serverDir}`);
   console.log(`   Local directory: ${localDir}\n`);
   
   const client = new ftp.Client();
@@ -119,15 +171,27 @@ async function deploy(env) {
     });
     console.log('✅ Connected to FTP server\n');
     
-    // Change to server directory
-    console.log(`📁 Changing to directory: ${serverDir}`);
-    await client.cd(serverDir);
-    console.log('✅ Changed to target directory\n');
+    // Change to server directory (try path fallbacks for DreamHost)
+    console.log(`📁 Changing to remote web root...`);
+    const resolved = await cdRemoteRoot(client, cdCandidates);
+    const webRootPwd = await client.pwd();
+    console.log(`✅ Using: ${resolved}\n`);
     
     // Upload all files from dist/
     console.log('📤 Uploading files...');
     await client.uploadFromDir(localDir);
     console.log('✅ Files uploaded successfully\n');
+
+    // Upload PHP API files (do not call ensureDir('api') first — uploadFromDir already
+    // ensures the path; a prior ensureDir would leave cwd inside api/ and create api/api.)
+    const apiLocalDir = join(projectRoot, 'api');
+    if (existsSync(apiLocalDir)) {
+      console.log('📤 Uploading PHP API files...');
+      await client.uploadFromDir(apiLocalDir, 'api');
+      console.log('✅ PHP API files uploaded\n');
+    }
+
+    await client.cd(webRootPwd);
     
     // Verify data.json was uploaded
     if (existsSync(join(localDir, 'data.json'))) {

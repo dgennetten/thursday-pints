@@ -8,8 +8,8 @@ import BreweryMap from './components/BreweryMap';
 import WelcomePopup from './components/WelcomePopup';
 import NextBreweryCard from './components/NextBreweryCard';
 import { RefreshCw, Route, Beer, Star, Map as MapIcon } from 'lucide-react';
-import { loadVisitsFromPublicJSON } from './services/spreadsheetService';
-import { loadBreweriesFromJSON } from './services/breweryService';
+import { loadVisitsFromPublicJSON, loadVisitsFromAPI } from './services/spreadsheetService';
+import { loadBreweriesFromJSON, loadBreweriesFromAPI } from './services/breweryService';
 import packageJson from '../package.json';
 
 const APP_VERSION = packageJson.version;
@@ -34,8 +34,8 @@ function App() {
     async function loadData() {
       try {
         const [publicVisits, breweries] = await Promise.all([
-          loadVisitsFromPublicJSON(),
-          loadBreweriesFromJSON()
+          loadVisitsFromAPI().then(v => v ?? loadVisitsFromPublicJSON()),
+          loadBreweriesFromAPI().then(b => b ?? loadBreweriesFromJSON()),
         ]);
         
         if (publicVisits && publicVisits.length > 0) {

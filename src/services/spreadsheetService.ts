@@ -1,6 +1,22 @@
 import * as XLSX from 'xlsx';
 import { Visit } from '../types';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
+// Load visits from MySQL via PHP API
+export async function loadVisitsFromAPI(): Promise<Visit[] | null> {
+  if (!API_BASE) return null;
+  try {
+    const response = await fetch(`${API_BASE}/visits.php`);
+    if (!response.ok) return null;
+    const visits = await response.json() as Visit[];
+    return Array.isArray(visits) && visits.length > 0 ? visits : null;
+  } catch (error) {
+    console.error('Error loading visits from API:', error);
+    return null;
+  }
+}
+
 // OneDrive sharing link - convert to direct download link
 // Pattern: https://1drv.ms/x/c/... -> https://onedrive.live.com/download?resid=...&authkey=...
 const ONEDRIVE_SHARING_LINK = 'https://1drv.ms/x/c/d16eda79b75a425c/IQBSKd91i0T5S50GEqU34yRsAahxmTOGgL1koXqWGDuy8WY';
