@@ -2,7 +2,7 @@
 define('DB_HOST',    'mysql.gennetten.com');
 define('DB_NAME',    'thursdaypints');
 define('DB_USER',    'dgennetten');
-define('DB_PASS',    'td!stayAct1ve');  // Set the real password here before deploying
+define('DB_PASS',    'td!S1ngular1ty');  // Set the real password here before deploying
 define('DB_CHARSET', 'utf8mb4');
 
 function getDbConnection(): PDO {
