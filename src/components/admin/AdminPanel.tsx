@@ -29,7 +29,7 @@ export default function AdminPanel({ onClose, onDataChange }: Props) {
   }
 
   const tabs: { id: Tab; label: string; icon: typeof CalendarPlus }[] = [
-    { id: 'visit',   label: 'Add Visit',   icon: CalendarPlus },
+    { id: 'visit',   label: 'Tour Visits', icon: CalendarPlus },
     { id: 'brewery', label: 'Add Brewery', icon: Beer },
     ...(user?.role === 'superadmin'
       ? [{ id: 'admins' as Tab, label: 'Admins', icon: Users }]
@@ -106,6 +106,17 @@ export default function AdminPanel({ onClose, onDataChange }: Props) {
           {tab === 'admins' && user?.token && user.role === 'superadmin' && (
             <ManageAdminsPanel token={user.token} />
           )}
+        </div>
+
+        {/* Footer */}
+        <div className="shrink-0 px-5 py-3 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            Close Admin
+          </button>
         </div>
       </div>
     </>

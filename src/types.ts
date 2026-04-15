@@ -48,3 +48,19 @@ export interface AddBreweryPayload {
   latitude: number;
   longitude: number;
 }
+
+export interface AdminVisit {
+  id: number;
+  date: string;         // YYYY-MM-DD
+  breweryName: string;
+  nextBrewery?: string;
+  notes?: string;
+  isClosed?: boolean;
+}
+
+export interface UpdateVisitPayload {
+  date: string;
+  breweryName: string;
+  nextBrewery?: string;
+  notes?: string;
+}

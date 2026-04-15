@@ -1,7 +1,8 @@
-import { useState, FormEvent } from 'react';
-import { CheckCircle } from 'lucide-react';
-import { addVisit } from '../../services/adminService';
+import { useState, useEffect, useCallback, FormEvent } from 'react';
+import { CheckCircle, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { addVisit, getVisits, updateVisit } from '../../services/adminService';
 import { getUpcomingThursday } from '../../utils';
+import type { AdminVisit } from '../../types';
 
 interface Props {
   token: string;
@@ -10,41 +11,175 @@ interface Props {
 }
 
 export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) {
+  const [visits, setVisits]             = useState<AdminVisit[]>([]);
+  const [currentIdx, setCurrentIdx]     = useState<number>(-1); // -1 = new entry
+  const [loadingVisits, setLoadingVisits] = useState(true);
+
+  // Form fields
   const [date, setDate]               = useState(getUpcomingThursday());
   const [breweryName, setBreweryName] = useState('');
   const [nextBrewery, setNextBrewery] = useState('');
   const [notes, setNotes]             = useState('');
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState('');
-  const [success, setSuccess]         = useState(false);
+
+  const [saving, setSaving]         = useState(false);
+  const [error, setError]           = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+
+  function populateForm(visit: AdminVisit) {
+    setDate(visit.date);
+    setBreweryName(visit.breweryName);
+    setNextBrewery(visit.nextBrewery ?? '');
+    setNotes(visit.notes ?? '');
+  }
+
+  function clearForm(targetDate?: string) {
+    setDate(targetDate ?? getUpcomingThursday());
+    setBreweryName('');
+    setNextBrewery('');
+    setNotes('');
+  }
+
+  const loadAndPosition = useCallback(async (
+    opts?: { targetDate?: string; targetId?: number }
+  ) => {
+    const loaded = await getVisits(token);
+    const sorted = [...loaded].sort((a, b) => a.date.localeCompare(b.date));
+    setVisits(sorted);
+
+    // After saving: navigate to the visit we just created/updated
+    if (opts?.targetId != null) {
+      const idx = sorted.findIndex(v => v.id === opts.targetId);
+      if (idx >= 0) { setCurrentIdx(idx); populateForm(sorted[idx]); return; }
+    }
+    if (opts?.targetDate) {
+      const idx = sorted.findIndex(v => v.date === opts.targetDate);
+      if (idx >= 0) { setCurrentIdx(idx); populateForm(sorted[idx]); return; }
+    }
+
+    // Smart initialization: if the most recent visit is next Thursday, load it for editing.
+    // Otherwise prep a blank new entry.
+    const nextThu = getUpcomingThursday();
+    const latest  = sorted[sorted.length - 1];
+    if (latest && latest.date === nextThu) {
+      setCurrentIdx(sorted.length - 1);
+      populateForm(latest);
+    } else {
+      setCurrentIdx(-1);
+      clearForm(nextThu);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    setLoadingVisits(true);
+    loadAndPosition().finally(() => setLoadingVisits(false));
+  }, [loadAndPosition]);
+
+  // Derived state
+  const isNew           = currentIdx === -1;
+  const visitNumber     = isNew ? visits.length + 1 : currentIdx + 1;
+  const isPrevDisabled  = visits.length === 0 || currentIdx === 0;
+  const isNextDisabled  = isNew;
+
+  function navigateTo(idx: number) {
+    setError('');
+    setSuccessMsg('');
+    if (idx === -1) {
+      setCurrentIdx(-1);
+      clearForm();
+    } else {
+      setCurrentIdx(idx);
+      populateForm(visits[idx]);
+    }
+  }
+
+  function handlePrev() {
+    if (isNew)             navigateTo(visits.length - 1);
+    else if (currentIdx > 0) navigateTo(currentIdx - 1);
+  }
+
+  function handleNext() {
+    if (!isNew && currentIdx < visits.length - 1) navigateTo(currentIdx + 1);
+    else if (!isNew && currentIdx === visits.length - 1) navigateTo(-1);
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setSuccessMsg('');
+    setSaving(true);
     try {
-      await addVisit(token, {
+      const payload = {
         date,
         breweryName: breweryName.trim(),
         nextBrewery: nextBrewery.trim() || undefined,
-        notes: notes.trim() || undefined,
-      });
-      setSuccess(true);
-      setBreweryName('');
-      setNextBrewery('');
-      setNotes('');
-      setDate(getUpcomingThursday());
-      onSuccess();
-      setTimeout(() => setSuccess(false), 3000);
+        notes:       notes.trim()       || undefined,
+      };
+
+      if (isNew) {
+        await addVisit(token, payload);
+        onSuccess();
+        setSuccessMsg('Visit added!');
+        await loadAndPosition({ targetDate: date });
+      } else {
+        const id = visits[currentIdx].id;
+        await updateVisit(token, id, payload);
+        onSuccess();
+        setSuccessMsg('Changes saved!');
+        await loadAndPosition({ targetId: id });
+      }
+
+      setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add visit');
+      setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
+  }
+
+  if (loadingVisits) {
+    return (
+      <div className="flex items-center justify-center py-10">
+        <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+      </div>
+    );
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+
+      {/* Visit number + Prev/Next */}
+      <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <span className="text-base font-bold text-gray-900">Visit #{visitNumber}</span>
+          {isNew && (
+            <span className="text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5 leading-none">
+              New
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={handlePrev}
+            disabled={isPrevDisabled}
+            className="flex items-center gap-0.5 px-2 py-1 rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            PREV
+          </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={isNextDisabled}
+            className="flex items-center gap-0.5 px-2 py-1 rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            NEXT
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Date */}
       <div>
         <label htmlFor="visit-date" className="block text-sm font-medium text-gray-700 mb-1">
           Visit date
@@ -59,6 +194,7 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
         />
       </div>
 
+      {/* Brewery */}
       <div>
         <label htmlFor="visit-brewery" className="block text-sm font-medium text-gray-700 mb-1">
           Brewery name
@@ -80,6 +216,7 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
         </datalist>
       </div>
 
+      {/* Next hint / limerick */}
       <div>
         <label htmlFor="visit-next" className="block text-sm font-medium text-gray-700 mb-1">
           Next week hint / limerick
@@ -94,6 +231,7 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
         />
       </div>
 
+      {/* Notes */}
       <div>
         <label htmlFor="visit-notes" className="block text-sm font-medium text-gray-700 mb-1">
           Notes <span className="text-gray-400 font-normal">(optional)</span>
@@ -110,20 +248,22 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {success && (
+      {successMsg && (
         <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
           <CheckCircle className="w-4 h-4 shrink-0" />
-          Visit added successfully!
+          {successMsg}
         </div>
       )}
 
       <button
         type="submit"
-        disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+        disabled={saving}
+        className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
       >
-        {loading ? 'Adding…' : 'Add Visit'}
+        {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+        {saving ? 'Saving…' : isNew ? 'Add Visit' : 'Save Changes'}
       </button>
+
     </form>
   );
 }

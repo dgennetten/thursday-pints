@@ -1,4 +1,4 @@
-import { Admin, AddVisitPayload, AddBreweryPayload } from '../types';
+import { Admin, AdminVisit, AddVisitPayload, AddBreweryPayload, UpdateVisitPayload } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -70,10 +70,22 @@ export async function verifySession(
   }
 }
 
+export async function getVisits(token: string): Promise<AdminVisit[]> {
+  const res = await authFetch(token, `${API_BASE}/admin/visits.php`);
+  return res.json();
+}
+
 export async function addVisit(token: string, payload: AddVisitPayload): Promise<void> {
   await authFetch(token, `${API_BASE}/admin/add-visit.php`, {
     method: 'POST',
     body: JSON.stringify(payload),
+  });
+}
+
+export async function updateVisit(token: string, id: number, payload: UpdateVisitPayload): Promise<void> {
+  await authFetch(token, `${API_BASE}/admin/visits.php`, {
+    method: 'PUT',
+    body: JSON.stringify({ id, ...payload }),
   });
 }
 
