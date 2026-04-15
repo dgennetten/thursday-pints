@@ -5,6 +5,10 @@ define('DB_USER',    'dgennetten');
 define('DB_PASS',    'td!S1ngular1ty');  // Set the real password here before deploying
 define('DB_CHARSET', 'utf8mb4');
 
+define('MAIL_FROM',       'noreply@gennetten.org');
+define('MAIL_FROM_NAME',  'Thursday Pints');
+define('OTP_TTL_MINUTES', 10);
+
 function getDbConnection(): PDO {
     static $pdo = null;
     if ($pdo === null) {
@@ -17,4 +21,11 @@ function getDbConnection(): PDO {
         $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
     }
     return $pdo;
+}
+
+function jsonOut(array $data, int $status = 200): never {
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data);
+    exit;
 }

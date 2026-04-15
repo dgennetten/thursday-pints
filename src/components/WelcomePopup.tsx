@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 
 interface WelcomePopupProps {
@@ -7,27 +7,7 @@ interface WelcomePopupProps {
 }
 
 export default function WelcomePopup({ version, onClose }: WelcomePopupProps) {
-  const [instructions, setInstructions] = useState<string>('');
   const [dontShowAgain, setDontShowAgain] = useState(false);
-
-  useEffect(() => {
-    // Load instructions from markdown file with cache-busting
-    const timestamp = new Date().getTime();
-    fetch(`/instructions.md?v=${timestamp}`, {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
-    })
-      .then(res => res.text())
-      .then(text => setInstructions(text))
-      .catch(err => {
-        console.error('Error loading instructions:', err);
-        setInstructions('# Welcome to Thursday Pints!\n\nInstructions could not be loaded.');
-      });
-  }, []);
 
   const handleClose = () => {
     if (dontShowAgain) {
@@ -36,93 +16,53 @@ export default function WelcomePopup({ version, onClose }: WelcomePopupProps) {
     onClose();
   };
 
-  // Convert markdown to HTML (simple conversion)
-  const markdownToHtml = (md: string): string => {
-    if (!md) return '';
-    
-    let html = md;
-    
-    // Headers
-    html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mb-4">$1</h1>');
-    html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2">$1</h2>');
-    html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-3 mb-2">$1</h3>');
-    
-    // Bold and italic
-    html = html.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
-    
-    // Lists - handle bullet points
-    const lines = html.split('\n');
-    let inList = false;
-    let result: string[] = [];
-    
-    lines.forEach((line) => {
-      const isListItem = /^\- (.*)$/.test(line.trim());
-      
-      if (isListItem) {
-        if (!inList) {
-          result.push('<ul class="list-disc ml-6 mb-2">');
-          inList = true;
-        }
-        const content = line.replace(/^\- (.*)$/, '$1');
-        result.push(`<li class="mb-1">${content}</li>`);
-      } else {
-        if (inList) {
-          result.push('</ul>');
-          inList = false; } if (line.trim() && !line.match(/^<[h]/)) { result.push(`<p class="mb-2">${line}</p>`); } else if (line.trim()) { result.push(line); } } }); if (inList) { result.push('</ul>'); } return result.join('\n'); }; return ( <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"> <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Welcome to the Tour Tracker!</h2>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-sm rounded-lg bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+          <h2 className="text-lg font-semibold text-gray-900">Thursday Pints</h2>
           <button
+            type="button"
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600"
             aria-label="Close"
           >
-            <X className="w-6 h-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
-        
-        <div className="px-6 py-4">
-          {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <img 
-              src="/logo.svg" 
-              alt="Thursday Pints Logo" 
-              className="h-24 w-auto"
-            />
-          </div>
 
-          {/* Instructions Content */}
-          <div 
-            className="prose prose-sm max-w-none text-gray-700"
-            dangerouslySetInnerHTML={{ __html: markdownToHtml(instructions) }}
-          />
-
-          {/* Version and Feedback */}
-          <div className="mt-6 pt-4 border-t border-gray-200 text-center">
-            <p className="text-xs text-gray-500">
-              Version {version} • <a href="mailto:feedback@thursdaypints.com" className="text-blue-600 hover:underline">Send Feedback!</a> • <a href="mailto:errors@thursdaypints.com" className="text-blue-600 hover:underline">Report Errors!</a>
-            </p>
-          </div>
+        <div className="px-4 py-4 text-center">
+          <img src="/logo.svg" alt="" className="mx-auto mb-3 h-14 w-auto" />
+          <p className="text-sm text-gray-600">
+            Use <strong>Breweries</strong>, <strong>Ranked</strong>, or <strong>Tour</strong> tabs. Filter searches names,
+            dates, and places. Toggle <strong>Map</strong> to see pins; click a list row or pin to focus.
+          </p>
+          <p className="mt-3 text-xs text-gray-500">
+            v{version} ·{' '}
+            <a href="mailto:feedback@thursdaypints.com" className="text-blue-600 hover:underline">
+              Feedback
+            </a>
+          </p>
         </div>
 
-        {/* Close Button and Don't Show Again */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between gap-4">
-          <button
-            onClick={handleClose}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium shrink-0"
-          >
-            Get Started
-          </button>
-          <label htmlFor="dontShowAgain" className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer shrink-0">
+        <div className="flex flex-col gap-3 border-t border-gray-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <label htmlFor="dontShowAgain" className="flex cursor-pointer items-center gap-2 text-xs text-gray-600">
             <input
-              type="checkbox"
               id="dontShowAgain"
+              type="checkbox"
               checked={dontShowAgain}
               onChange={(e) => setDontShowAgain(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            Don't show this again
+            Don&apos;t show again
           </label>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            OK
+          </button>
         </div>
       </div>
     </div>

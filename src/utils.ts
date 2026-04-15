@@ -115,6 +115,14 @@ export function getNextThursday(dateString: string): string {
   return `${nextYear}-${nextMonth}-${nextDay}`;
 }
 
+export function getUpcomingThursday(): string {
+  const today = new Date();
+  const daysUntilThursday = (4 - today.getDay() + 7) % 7; // 0 if today IS Thursday
+  const thu = new Date(today);
+  thu.setDate(today.getDate() + daysUntilThursday);
+  return `${thu.getFullYear()}-${String(thu.getMonth() + 1).padStart(2, '0')}-${String(thu.getDate()).padStart(2, '0')}`;
+}
+
 export function getTopBreweries(stats: BreweryStats[], count: number = 10): BreweryStats[] {
   return [...stats]
     .sort((a, b) => b.visitCount - a.visitCount)

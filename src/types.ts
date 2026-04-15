@@ -26,3 +26,25 @@ export interface BreweryWithLocation extends BreweryStats {
   lng?: number;
   address?: string;
 }
+
+export interface Admin {
+  id: number;
+  email: string;
+  role: 'admin' | 'superadmin';
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AddVisitPayload {
+  date: string;
+  breweryName: string;
+  nextBrewery?: string;
+  notes?: string;
+}
+
+export interface AddBreweryPayload {
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+}

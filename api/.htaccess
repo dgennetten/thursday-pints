@@ -2,3 +2,7 @@
     Order allow,deny
     Deny from all
 </Files>
+
+# Pass Authorization header through to PHP (stripped by FastCGI on Dreamhost without this)
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

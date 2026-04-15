@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "WebSearch",
+      "WebFetch(domain:buildermethods.com)",
+      "WebFetch(domain:x.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:dev.to)",
+      "Bash(npm run *)"
+    ]
+  }
+}

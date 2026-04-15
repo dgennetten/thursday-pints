@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Visit, BreweryWithLocation } from './types';
 import { processVisits, mergeBreweryStatsWithAllBreweries } from './utils';
 import BreweryList from './components/BreweryList';
@@ -7,9 +7,12 @@ import ToggleButton from './components/ToggleButton';
 import BreweryMap from './components/BreweryMap';
 import WelcomePopup from './components/WelcomePopup';
 import NextBreweryCard from './components/NextBreweryCard';
+import AdminLoginModal from './components/admin/AdminLoginModal';
+import AdminPanel from './components/admin/AdminPanel';
 import { RefreshCw, Route, Beer, Star, Map as MapIcon } from 'lucide-react';
 import { loadVisitsFromPublicJSON, loadVisitsFromAPI } from './services/spreadsheetService';
 import { loadBreweriesFromJSON, loadBreweriesFromAPI } from './services/breweryService';
+import { useAuth } from './contexts/AuthContext';
 import packageJson from '../package.json';
 
 const APP_VERSION = packageJson.version;
@@ -17,6 +20,7 @@ const APP_VERSION = packageJson.version;
 type ViewMode = 'breweries' | 'ranked' | 'tour';
 
 function App() {
+  const { user } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('tour');
   const [visits, setVisits] = useState<Visit[]>([]);
   const [breweriesData, setBreweriesData] = useState<Map<string, { lat: number; lng: number; address: string; status: string }>>(new Map() as Map<string, { lat: number; lng: number; address: string; status: string }>);
@@ -25,44 +29,47 @@ function App() {
   const [selectedBrewery, setSelectedBrewery] = useState<string | null>(null);
   const [filteredBreweries, setFilteredBreweries] = useState<BreweryWithLocation[]>([]);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const buttonsContainerRef = useRef<HTMLDivElement>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const hasUserInteracted = useRef(false);
 
-  // Load data from public/data.json and public/breweries.json
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [publicVisits, breweries] = await Promise.all([
-          loadVisitsFromAPI().then(v => v ?? loadVisitsFromPublicJSON()),
-          loadBreweriesFromAPI().then(b => b ?? loadBreweriesFromJSON()),
-        ]);
-        
-        if (publicVisits && publicVisits.length > 0) {
-          setVisits(publicVisits);
-        }
-        
-        if (breweries) {
-          const breweriesMap = new Map<string, { lat: number; lng: number; address: string; status: string }>();
-          breweries.forEach(brewery => {
-            breweriesMap.set(brewery.brewery_name, {
-              lat: brewery.latitude,
-              lng: brewery.longitude,
-              address: brewery.brewery_address,
-              status: brewery.status
-            });
-          });
-          setBreweriesData(breweriesMap);
-        }
-      } catch (err) {
-        console.error('Error loading data:', err);
-      } finally {
-        setLoading(false);
+  // Extracted as a callback so the admin panel can trigger a refresh
+  const loadData = useCallback(async () => {
+    try {
+      const [publicVisits, breweries] = await Promise.all([
+        loadVisitsFromAPI().then(v => v ?? loadVisitsFromPublicJSON()),
+        loadBreweriesFromAPI().then(b => b ?? loadBreweriesFromJSON()),
+      ]);
+
+      if (publicVisits && publicVisits.length > 0) {
+        setVisits(publicVisits);
       }
+
+      if (breweries) {
+        const breweriesMap = new Map<string, { lat: number; lng: number; address: string; status: string }>();
+        breweries.forEach(brewery => {
+          breweriesMap.set(brewery.brewery_name, {
+            lat: brewery.latitude,
+            lng: brewery.longitude,
+            address: brewery.brewery_address,
+            status: brewery.status
+          });
+        });
+        setBreweriesData(breweriesMap);
+      }
+    } catch (err) {
+      console.error('Error loading data:', err);
+    } finally {
+      setLoading(false);
     }
-    
-    loadData();
   }, []);
+
+  // Load data from API / public JSON on mount
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Check if welcome popup should be shown
   useEffect(() => {
@@ -231,9 +238,24 @@ function App() {
   return (
     <>
       {showWelcome && (
-        <WelcomePopup 
+        <WelcomePopup
           version={APP_VERSION}
           onClose={() => setShowWelcome(false)}
+        />
+      )}
+      {showAdminLogin && (
+        <AdminLoginModal
+          onClose={() => setShowAdminLogin(false)}
+          onLoginSuccess={() => {
+            setShowAdminLogin(false);
+            setShowAdminPanel(true);
+          }}
+        />
+      )}
+      {showAdminPanel && (
+        <AdminPanel
+          onClose={() => setShowAdminPanel(false)}
+          onDataChange={loadData}
         />
       )}
       <div className="min-h-screen bg-gray-50">
@@ -249,10 +271,18 @@ function App() {
                 Brewery Tour Tracker
               </p>
             </div>
-            <img 
-              src="/logo.svg" 
-              alt="Thursday Pints Logo" 
-              className="h-16 w-auto"
+            <img
+              src="/logo.svg"
+              alt="Thursday Pints Logo"
+              className="h-16 w-auto cursor-pointer"
+              onClick={() => {
+                if (user) {
+                  setShowAdminPanel(true);
+                } else {
+                  setShowAdminLogin(true);
+                }
+              }}
+              title="Admin"
             />
           </div>
         </div>
