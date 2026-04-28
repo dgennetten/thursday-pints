@@ -15,11 +15,14 @@ export default function PhotoModal({ date, breweryName, token, onClose }: Props)
   const [photos, setPhotos]   = useState<VisitPhoto[]>([])
   const [idx, setIdx]         = useState(0)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
 
   useEffect(() => {
     setLoading(true)
+    setFetchError('')
     fetchVisitPhotos(date, token)
       .then(p => { setPhotos(p); setIdx(0) })
+      .catch(err => setFetchError(err instanceof Error ? err.message : 'Failed to load photos'))
       .finally(() => setLoading(false))
   }, [date, token])
 
@@ -55,6 +58,8 @@ export default function PhotoModal({ date, breweryName, token, onClose }: Props)
         <div className="flex-1 flex items-center justify-center relative min-h-0 bg-black">
           {loading ? (
             <Loader2 className="w-8 h-8 text-white animate-spin" />
+          ) : fetchError ? (
+            <p className="text-red-400 text-sm px-6 text-center">{fetchError}</p>
           ) : photos.length === 0 ? (
             <p className="text-gray-400 text-sm">No photos available.</p>
           ) : (

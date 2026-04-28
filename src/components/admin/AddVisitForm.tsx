@@ -134,6 +134,7 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
     try {
       const photo = await uploadVisitPhoto(date, visits[currentIdx].breweryName, file, token);
       setPhotos(prev => [...prev, photo]);
+      onSuccess();
     } catch (err) {
       setPhotoError(err instanceof Error ? err.message : 'Upload failed');
     } finally {

@@ -33,10 +33,11 @@ function App() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [photoVisitDates, setPhotoVisitDates] = useState<Set<string>>(new Set());
-  const [photoViewDate, setPhotoViewDate]     = useState<string | null>(null);
+  const [photoVisitDates, setPhotoVisitDates]   = useState<Set<string>>(new Set());
+  const [photoViewDate, setPhotoViewDate]       = useState<string | null>(null);
   const [photoViewBrewery, setPhotoViewBrewery] = useState<string | null>(null);
-  const [showPhotoModal, setShowPhotoModal]   = useState(false);
+  const [showPhotoModal, setShowPhotoModal]     = useState(false);
+  const [showPhotoGate, setShowPhotoGate]       = useState(false);
   const buttonsContainerRef = useRef<HTMLDivElement>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const hasUserInteracted = useRef(false);
@@ -228,7 +229,7 @@ function App() {
     setPhotoViewDate(date);
     setPhotoViewBrewery(breweryName);
     if (!user) {
-      setShowAdminLogin(true);
+      setShowPhotoGate(true);
     } else {
       setShowPhotoModal(true);
     }
@@ -287,6 +288,28 @@ function App() {
           token={user.token}
           onClose={() => { setShowPhotoModal(false); setPhotoViewDate(null); setPhotoViewBrewery(null); }}
         />
+      )}
+      {showPhotoGate && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowPhotoGate(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 className="text-base font-semibold text-gray-900 mb-2">Members Only</h2>
+            <p className="text-sm text-gray-600">
+              Must be logged in. Provide ThursdayPints.com Admin with your email via WhatsApp.
+            </p>
+            <button
+              onClick={() => setShowPhotoGate(false)}
+              className="mt-4 w-full py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
       <div className="min-h-screen bg-gray-50">
       {/* Header */}
