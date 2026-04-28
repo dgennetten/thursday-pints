@@ -29,5 +29,8 @@ CREATE TABLE IF NOT EXISTS auth_sessions (
 -- Seed the initial superadmin (idempotent — safe to re-run)
 INSERT IGNORE INTO admins (email, role) VALUES ('douglas@gennetten.com', 'superadmin');
 
+-- Migration: add member role (run once)
+-- ALTER TABLE admins MODIFY COLUMN role ENUM('admin','superadmin','member') NOT NULL DEFAULT 'admin';
+
 -- Maintenance (run manually or via cron):
 -- DELETE FROM auth_sessions WHERE expires_at < NOW();

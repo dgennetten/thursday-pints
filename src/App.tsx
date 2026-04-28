@@ -12,7 +12,9 @@ import AdminPanel from './components/admin/AdminPanel';
 import { RefreshCw, Route, Beer, Star, Map as MapIcon } from 'lucide-react';
 import { loadVisitsFromPublicJSON, loadVisitsFromAPI } from './services/spreadsheetService';
 import { loadBreweriesFromJSON, loadBreweriesFromAPI } from './services/breweryService';
+import { fetchPhotoAvailability } from './services/photoService';
 import { useAuth } from './contexts/AuthContext';
+import PhotoModal from './components/PhotoModal';
 import packageJson from '../package.json';
 
 const APP_VERSION = packageJson.version;
@@ -31,6 +33,10 @@ function App() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [photoVisitDates, setPhotoVisitDates] = useState<Set<string>>(new Set());
+  const [photoViewDate, setPhotoViewDate]     = useState<string | null>(null);
+  const [photoViewBrewery, setPhotoViewBrewery] = useState<string | null>(null);
+  const [showPhotoModal, setShowPhotoModal]   = useState(false);
   const buttonsContainerRef = useRef<HTMLDivElement>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const hasUserInteracted = useRef(false);
@@ -38,9 +44,10 @@ function App() {
   // Extracted as a callback so the admin panel can trigger a refresh
   const loadData = useCallback(async () => {
     try {
-      const [publicVisits, breweries] = await Promise.all([
+      const [publicVisits, breweries, photoDates] = await Promise.all([
         loadVisitsFromAPI().then(v => v ?? loadVisitsFromPublicJSON()),
         loadBreweriesFromAPI().then(b => b ?? loadBreweriesFromJSON()),
+        fetchPhotoAvailability().catch(() => [] as string[]),
       ]);
 
       if (publicVisits && publicVisits.length > 0) {
@@ -59,6 +66,8 @@ function App() {
         });
         setBreweriesData(breweriesMap);
       }
+
+      setPhotoVisitDates(new Set(photoDates));
     } catch (err) {
       console.error('Error loading data:', err);
     } finally {
@@ -90,16 +99,16 @@ function App() {
   }, [viewMode]);
 
   // Update content height to fill available space
-  const updateContentHeight = () => {
+  const updateContentHeight = useCallback(() => {
     if (contentContainerRef.current && buttonsContainerRef.current && showMap) {
       const buttonsRect = buttonsContainerRef.current.getBoundingClientRect();
       const buttonsBottom = buttonsRect.bottom + window.scrollY;
       const currentScrollY = window.scrollY;
       const viewportHeight = window.innerHeight;
-      const availableHeight = viewportHeight - (buttonsBottom - currentScrollY) - 24; // 24px for padding/margin
+      const availableHeight = viewportHeight - (buttonsBottom - currentScrollY) - 24;
       contentContainerRef.current.style.minHeight = `${Math.max(availableHeight, 400)}px`;
     }
-  };
+  }, [showMap]);
 
   // Update content container height when viewMode changes
   useEffect(() => {
@@ -108,12 +117,11 @@ function App() {
         updateContentHeight();
       }, 100);
     }
-  }, [viewMode]);
+  }, [viewMode, showMap, updateContentHeight]);
 
   // Update content height when map is toggled or window is resized
   useEffect(() => {
     if (showMap) {
-      // Small delay to ensure layout has updated
       setTimeout(() => {
         updateContentHeight();
       }, 100);
@@ -121,7 +129,7 @@ function App() {
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
     }
-  }, [showMap]);
+  }, [showMap, updateContentHeight]);
 
   const breweryStats = useMemo(() => processVisits(visits), [visits]);
 
@@ -156,7 +164,7 @@ function App() {
       breweriesWithVisits = breweriesWithVisits.filter(b => !b.isClosed);
     }
     
-    let sorted = viewMode === 'breweries'
+    const sorted = viewMode === 'breweries'
       ? [...breweriesWithVisits].sort((a, b) => {
           // Handle breweries with no visits (empty lastVisitDate)
           if (!a.lastVisitDate && !b.lastVisitDate) return 0;
@@ -216,6 +224,16 @@ function App() {
   }, [displayedBreweries, selectedBrewery, filteredBreweries]);
 
 
+  function handlePhotoClick(date: string, breweryName: string) {
+    setPhotoViewDate(date);
+    setPhotoViewBrewery(breweryName);
+    if (!user) {
+      setShowAdminLogin(true);
+    } else {
+      setShowPhotoModal(true);
+    }
+  }
+
   if (loading) {
     return (
       <>
@@ -246,9 +264,13 @@ function App() {
       {showAdminLogin && (
         <AdminLoginModal
           onClose={() => setShowAdminLogin(false)}
-          onLoginSuccess={() => {
+          onLoginSuccess={(role) => {
             setShowAdminLogin(false);
-            setShowAdminPanel(true);
+            if (role === 'admin' || role === 'superadmin') {
+              setShowAdminPanel(true);
+            } else if (photoViewDate) {
+              setShowPhotoModal(true);
+            }
           }}
         />
       )}
@@ -256,6 +278,14 @@ function App() {
         <AdminPanel
           onClose={() => setShowAdminPanel(false)}
           onDataChange={loadData}
+        />
+      )}
+      {showPhotoModal && photoViewDate && photoViewBrewery && user && (
+        <PhotoModal
+          date={photoViewDate}
+          breweryName={photoViewBrewery}
+          token={user.token}
+          onClose={() => { setShowPhotoModal(false); setPhotoViewDate(null); setPhotoViewBrewery(null); }}
         />
       )}
       <div className="min-h-screen bg-gray-50">
@@ -276,9 +306,9 @@ function App() {
               alt="Thursday Pints Logo"
               className="h-16 w-auto cursor-pointer"
               onClick={() => {
-                if (user) {
+                if (user && (user.role === 'admin' || user.role === 'superadmin')) {
                   setShowAdminPanel(true);
-                } else {
+                } else if (!user) {
                   setShowAdminLogin(true);
                 }
               }}
@@ -373,6 +403,8 @@ function App() {
                       return map;
                     })()}
                     setFilteredBreweries={setFilteredBreweries}
+                    photoVisitDates={photoVisitDates}
+                    onPhotoClick={handlePhotoClick}
                   />
                 ) : (
                   <BreweryList

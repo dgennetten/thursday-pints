@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Visit, BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
-import { MapPin, Search, X, Calendar, ChevronsUpDown } from 'lucide-react';
+import { MapPin, Search, X, Calendar, ChevronsUpDown, Camera } from 'lucide-react';
 
 interface VisitListProps {
   visits: Visit[];
@@ -12,35 +12,32 @@ interface VisitListProps {
   selectedBrewery?: string | null;
   breweriesData?: Map<string, BreweryWithLocation>;
   setFilteredBreweries?: (breweries: BreweryWithLocation[]) => void;
+  photoVisitDates?: Set<string>;
+  onPhotoClick?: (date: string, breweryName: string) => void;
 }
 
-export default function VisitList({ 
-  visits, 
-  title, 
-  hideBadge = false, 
+export default function VisitList({
+  visits,
+  title,
+  hideBadge = false,
   mapActive = false,
   onBrewerySelect,
   selectedBrewery,
   breweriesData,
-  setFilteredBreweries
+  setFilteredBreweries,
+  photoVisitDates,
+  onPhotoClick,
 }: VisitListProps) {
   const [filterText, setFilterText] = useState('');
   const [isReversed, setIsReversed] = useState(false);
-  if (visits.length === 0) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">{title}</h2>
-        <p className="text-gray-500">No visits found.</p>
-      </div>
-    );
-  }
 
-  // Calculate visit counts for each brewery
-  const breweryVisitCounts = new Map<string, number>();
-  visits.forEach(visit => {
-    const count = breweryVisitCounts.get(visit.breweryName) || 0;
-    breweryVisitCounts.set(visit.breweryName, count + 1);
-  });
+  const breweryVisitCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    visits.forEach(visit => {
+      counts.set(visit.breweryName, (counts.get(visit.breweryName) ?? 0) + 1);
+    });
+    return counts;
+  }, [visits]);
 
   // Sort visits by date (newest first) — must be stable across renders so filteredVisits
   // and map fitBounds are not recomputed every frame (which reset manual map zoom).
@@ -57,31 +54,22 @@ export default function VisitList({
   // Filter visits based on filter text (searches names, dates, notes, and location)
   const filteredVisits = useMemo(() => {
     let result = sortedVisits;
-    
+
     if (filterText.trim()) {
       const searchTerm = filterText.toLowerCase().trim();
       result = sortedVisits.filter(visit => {
-        // Search in brewery name
-        const nameMatch = visit.breweryName.toLowerCase().includes(searchTerm);
-        
-        // Search in formatted date
+        const nameMatch    = visit.breweryName.toLowerCase().includes(searchTerm);
         const formattedDate = formatDate(visit.date).toLowerCase();
-        const dateMatch = formattedDate.includes(searchTerm) || visit.date.includes(searchTerm);
-        
-        // Search in notes
-        const notesMatch = visit.notes?.toLowerCase().includes(searchTerm) || false;
-        
-        // Search in address/location (e.g. "Fort Collins", "Loveland")
-        const brewery = breweriesData?.get(visit.breweryName);
-        const addressMatch = brewery?.address?.toLowerCase().includes(searchTerm) || false;
-        
+        const dateMatch    = formattedDate.includes(searchTerm) || visit.date.includes(searchTerm);
+        const notesMatch   = visit.notes?.toLowerCase().includes(searchTerm) ?? false;
+        const brewery      = breweriesData?.get(visit.breweryName);
+        const addressMatch = brewery?.address?.toLowerCase().includes(searchTerm) ?? false;
         return nameMatch || dateMatch || notesMatch || addressMatch;
       });
     }
-    
-    // Reverse the list if isReversed is true
+
     return isReversed ? [...result].reverse() : result;
-  }, [sortedVisits, filterText, isReversed]);
+  }, [sortedVisits, filterText, isReversed, breweriesData]);
 
   // Convert filtered visits to breweries for map
   useEffect(() => {
@@ -96,6 +84,15 @@ export default function VisitList({
       setFilteredBreweries(Array.from(uniqueBreweries.values()));
     }
   }, [filteredVisits, breweriesData, setFilteredBreweries]);
+
+  if (visits.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">{title}</h2>
+        <p className="text-gray-500">No visits found.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200">
@@ -170,6 +167,17 @@ export default function VisitList({
                       <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
                         Closed
                       </span>
+                    )}
+                    {photoVisitDates?.has(visit.date) && (
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); onPhotoClick?.(visit.date, visit.breweryName); }}
+                        className="text-blue-500 hover:text-blue-700 transition-colors"
+                        title="View photos"
+                        aria-label="View visit photos"
+                      >
+                        <Camera className="w-4 h-4" />
+                      </button>
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">

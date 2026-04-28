@@ -14,7 +14,7 @@ export default function ManageAdminsPanel({ token }: Props) {
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState('');
   const [newEmail, setNewEmail] = useState('');
-  const [newRole, setNewRole]   = useState<'admin' | 'superadmin'>('admin');
+  const [newRole, setNewRole]   = useState<'admin' | 'superadmin' | 'member'>('admin');
   const [adding, setAdding]     = useState(false);
   const [addError, setAddError] = useState('');
 
@@ -58,7 +58,7 @@ export default function ManageAdminsPanel({ token }: Props) {
   }
 
   async function handleDelete(admin: Admin) {
-    if (!confirm(`Remove ${admin.email} from admins?`)) return;
+    if (!confirm(`Remove ${admin.email}?`)) return;
     try {
       await deleteAdmin(token, admin.id);
       await load();
@@ -67,7 +67,7 @@ export default function ManageAdminsPanel({ token }: Props) {
     }
   }
 
-  if (loading) return <p className="text-sm text-gray-500">Loading admins…</p>;
+  if (loading) return <p className="text-sm text-gray-500">Loading users…</p>;
 
   return (
     <div className="space-y-5">
@@ -97,7 +97,7 @@ export default function ManageAdminsPanel({ token }: Props) {
                   </button>
                   <button
                     onClick={() => handleDelete(admin)}
-                    title="Remove admin"
+                    title="Remove user"
                     className="p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -109,9 +109,9 @@ export default function ManageAdminsPanel({ token }: Props) {
         })}
       </div>
 
-      {/* Add admin form */}
+      {/* Add user form */}
       <form onSubmit={handleAdd} className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-700">Add admin</h3>
+        <h3 className="text-sm font-semibold text-gray-700">Add user</h3>
         <input
           type="email"
           required
@@ -123,9 +123,10 @@ export default function ManageAdminsPanel({ token }: Props) {
         <div className="flex gap-2">
           <select
             value={newRole}
-            onChange={e => setNewRole(e.target.value as 'admin' | 'superadmin')}
+            onChange={e => setNewRole(e.target.value as 'admin' | 'superadmin' | 'member')}
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
+            <option value="member">User</option>
             <option value="admin">Admin</option>
             <option value="superadmin">Superadmin</option>
           </select>

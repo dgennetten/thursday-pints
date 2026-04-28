@@ -110,7 +110,7 @@ export async function getAdmins(token: string): Promise<Admin[]> {
 export async function addAdmin(
   token: string,
   email: string,
-  role: 'admin' | 'superadmin'
+  role: 'admin' | 'superadmin' | 'member'
 ): Promise<void> {
   await authFetch(token, `${API_BASE}/admin/admins.php`, {
     method: 'POST',

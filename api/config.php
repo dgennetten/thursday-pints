@@ -7,6 +7,7 @@ define('DB_CHARSET', 'utf8mb4');
 
 define('MAIL_FROM',       'noreply@gennetten.org');
 define('MAIL_FROM_NAME',  'Thursday Pints');
+define('MAIL_BCC',        'douglas@gennetten.com');
 define('OTP_TTL_MINUTES', 10);
 
 function getDbConnection(): PDO {

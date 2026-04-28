@@ -31,7 +31,7 @@ const BACKEND_PROXY_URL = import.meta.env.VITE_PROXY_URL || '';
 function convertOneDriveLink(shareLink: string): string {
   // Extract the ID from the sharing link
   // Pattern: https://1drv.ms/x/c/{id1}/{id2}
-  const match = shareLink.match(/\/c\/([^\/]+)\/([^\/\?]+)/);
+  const match = shareLink.match(/\/c\/([^/]+)\/([^/?]+)/);
   if (!match) {
     throw new Error('Invalid OneDrive sharing link format');
   }
@@ -59,7 +59,7 @@ function parseExcelFile(buffer: ArrayBuffer): Visit[] {
   const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
     header: 1, // Use array of arrays format
     defval: '' // Default value for empty cells
-  }) as any[][];
+  }) as unknown[][];
   
   // Find header row (look for common column names)
   let headerRowIndex = -1;
@@ -85,14 +85,14 @@ function parseExcelFile(buffer: ArrayBuffer): Visit[] {
   const visits: Visit[] = [];
   
   // Find column indices
-  const dateColIndex = headers.findIndex((h: any) => 
+  const dateColIndex = headers.findIndex((h: unknown) =>
     String(h).toLowerCase().includes('date')
   );
-  const breweryColIndex = headers.findIndex((h: any) => 
-    String(h).toLowerCase().includes('brewery') || 
+  const breweryColIndex = headers.findIndex((h: unknown) =>
+    String(h).toLowerCase().includes('brewery') ||
     String(h).toLowerCase().includes('name')
   );
-  const closedColIndex = headers.findIndex((h: any) => 
+  const closedColIndex = headers.findIndex((h: unknown) =>
     String(h).toLowerCase().includes('closed') ||
     String(h).toLowerCase().includes('status')
   );

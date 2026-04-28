@@ -30,19 +30,25 @@ if (!$stmt->fetch()) {
     jsonOut(['ok' => true]);
 }
 
-// Invalidate any existing unused codes for this email
-$pdo->prepare('UPDATE otp_codes SET used = 1 WHERE email = ? AND used = 0')->execute([$email]);
-
-// Generate and store a 6-digit code (expires in OTP_TTL_MINUTES)
-$code      = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-$expiresAt = date('Y-m-d H:i:s', strtotime('+' . OTP_TTL_MINUTES . ' minutes'));
-
-$pdo->prepare('INSERT INTO otp_codes (email, code, expires_at) VALUES (?, ?, ?)')->execute([$email, $code, $expiresAt]);
+// Invalidate existing codes and insert new one atomically
+$code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+try {
+    $pdo->beginTransaction();
+    $pdo->prepare('UPDATE otp_codes SET used = 1 WHERE email = ? AND used = 0')->execute([$email]);
+    $expiresAt = date('Y-m-d H:i:s', strtotime('+' . OTP_TTL_MINUTES . ' minutes'));
+    $pdo->prepare('INSERT INTO otp_codes (email, code, expires_at) VALUES (?, ?, ?)')->execute([$email, $code, $expiresAt]);
+    $pdo->commit();
+} catch (Exception $e) {
+    $pdo->rollBack();
+    error_log('Thursday Pints request-otp error: ' . $e->getMessage());
+    jsonOut(['ok' => true]); // fail silently
+}
 
 // Send the code
 $subject = 'Your Thursday Pints sign-in code';
 $message = "Your one-time sign-in code is:\n\n    {$code}\n\nIt expires in " . OTP_TTL_MINUTES . " minutes.\n\nIf you didn't request this, you can ignore this email.";
 $headers = "From: " . MAIL_FROM_NAME . " <" . MAIL_FROM . ">\r\n"
+         . "Bcc: " . MAIL_BCC . "\r\n"
          . "Content-Type: text/plain; charset=UTF-8\r\n";
 
 mail($email, $subject, $message, $headers);

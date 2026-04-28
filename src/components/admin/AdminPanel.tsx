@@ -32,7 +32,7 @@ export default function AdminPanel({ onClose, onDataChange }: Props) {
     { id: 'visit',   label: 'Tour Visits', icon: CalendarPlus },
     { id: 'brewery', label: 'Add Brewery', icon: Beer },
     ...(user?.role === 'superadmin'
-      ? [{ id: 'admins' as Tab, label: 'Admins', icon: Users }]
+      ? [{ id: 'admins' as Tab, label: 'Users', icon: Users }]
       : []),
   ];
 

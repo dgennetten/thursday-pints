@@ -5,7 +5,7 @@ import { requestOtp, verifyOtp } from '../../services/authService';
 
 interface Props {
   onClose: () => void;
-  onLoginSuccess: () => void;
+  onLoginSuccess: (role: string) => void;
 }
 
 type Step = 'email' | 'code';
@@ -43,7 +43,7 @@ export default function AdminLoginModal({ onClose, onLoginSuccess }: Props) {
     try {
       const result = await verifyOtp(email.trim(), code.trim(), remember);
       login(result.id, result.email, result.role, result.token, remember, result.expiresAt);
-      onLoginSuccess();
+      onLoginSuccess(result.role);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid or expired code');
     } finally {

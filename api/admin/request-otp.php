@@ -28,18 +28,20 @@ try {
     $stmt->execute([$email]);
 
     if ($stmt->fetch()) {
-        // Invalidate existing unused codes
+        // Invalidate existing codes and insert new one atomically
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $pdo->beginTransaction();
         $pdo->prepare('UPDATE otp_codes SET used = 1 WHERE email = ? AND used = 0')->execute([$email]);
-
-        // Generate and store code
-        $code      = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $expiresAt = date('Y-m-d H:i:s', strtotime('+' . OTP_TTL_MINUTES . ' minutes'));
         $pdo->prepare('INSERT INTO otp_codes (email, code, expires_at) VALUES (?, ?, ?)')->execute([$email, $code, $expiresAt]);
+        $pdo->commit();
 
         // Send email
         $subject = 'Your Thursday Pints sign-in code';
         $message = "Your one-time sign-in code is:\n\n    {$code}\n\nIt expires in " . OTP_TTL_MINUTES . " minutes.";
-        $headers = "From: " . MAIL_FROM_NAME . " <" . MAIL_FROM . ">\r\nContent-Type: text/plain; charset=UTF-8\r\n";
+        $headers = "From: " . MAIL_FROM_NAME . " <" . MAIL_FROM . ">\r\n"
+                 . "Bcc: " . MAIL_BCC . "\r\n"
+                 . "Content-Type: text/plain; charset=UTF-8\r\n";
         mail($email, $subject, $message, $headers);
     }
 
