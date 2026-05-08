@@ -34,8 +34,11 @@ export default function WelcomePopup({ version, onClose }: WelcomePopupProps) {
         <div className="px-4 py-4 text-center">
           <img src="/logo.svg" alt="" className="mx-auto mb-3 h-14 w-auto" />
           <p className="text-sm text-gray-600">
-            Use <strong>Breweries</strong>, <strong>Ranked</strong>, or <strong>Tour</strong> tabs. Filter searches names,
+            Choose <strong>Breweries</strong>, <strong>Ranked</strong>, or <strong>Tour</strong> tabs. Filter searches names,
             dates, and places. Toggle <strong>Map</strong> to see pins; click a list row or pin to focus.
+          </p>
+          <p className="mt-2 text-sm text-gray-600">
+            Become a registered <strong>member</strong> to view photos.
           </p>
           <p className="mt-3 text-xs text-gray-500">
             v{version} ·{' '}

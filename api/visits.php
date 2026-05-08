@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: https://thursdaypints.com');
-header('Cache-Control: public, max-age=300');
+header('Cache-Control: no-cache, must-revalidate');
 
 require_once __DIR__ . '/config.php';
 

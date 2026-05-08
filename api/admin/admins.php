@@ -16,9 +16,9 @@ try {
     $pdo    = getDbConnection();
     $method = $_SERVER['REQUEST_METHOD'];
 
-    // GET — list all admins (superadmin only)
+    // GET — list all admins (admin and superadmin)
     if ($method === 'GET') {
-        $me = requireAuth($pdo, ['superadmin']);
+        $me = requireAuth($pdo, ['admin', 'superadmin']);
         $stmt = $pdo->query(
             'SELECT id, email, role, is_active, created_at FROM admins ORDER BY created_at ASC'
         );
@@ -32,22 +32,25 @@ try {
         exit;
     }
 
-    // POST — add a new admin (superadmin only)
+    // POST — add a new user (superadmin: any role; admin: member only)
     if ($method === 'POST') {
-        $me   = requireAuth($pdo, ['superadmin']);
+        $me   = requireAuth($pdo, ['admin', 'superadmin']);
         $body = json_decode(file_get_contents('php://input'), true);
 
         $email = trim((string)($body['email'] ?? ''));
-        $role  = trim((string)($body['role']  ?? 'admin'));
+        $role  = trim((string)($body['role']  ?? 'member'));
 
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             http_response_code(400);
             echo json_encode(['error' => 'Valid email required']);
             exit;
         }
-        if (!in_array($role, ['admin', 'superadmin'], true)) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Role must be admin or superadmin']);
+        $allowedRoles = $me['role'] === 'superadmin'
+            ? ['admin', 'superadmin', 'member']
+            : ['member'];
+        if (!in_array($role, $allowedRoles, true)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Insufficient permissions for this role']);
             exit;
         }
 
@@ -68,7 +71,7 @@ try {
         $id   = (int)($body['id']   ?? 0);
         $role = trim((string)($body['role'] ?? ''));
 
-        if ($id <= 0 || !in_array($role, ['admin', 'superadmin'], true)) {
+        if ($id <= 0 || !in_array($role, ['admin', 'superadmin', 'member'], true)) {
             http_response_code(400);
             echo json_encode(['error' => 'Valid id and role required']);
             exit;

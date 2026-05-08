@@ -26,8 +26,12 @@ $stmt = $pdo->prepare('SELECT id FROM admins WHERE LOWER(email) = ? AND is_activ
 $stmt->execute([$email]);
 
 if (!$stmt->fetch()) {
-    // Email not in admins — silently do nothing
-    jsonOut(['ok' => true]);
+    // Email not in admins — return admin contact list so the UI can guide them
+    $adminStmt = $pdo->query(
+        "SELECT email FROM admins WHERE role IN ('admin', 'superadmin') AND is_active = 1 ORDER BY role DESC, email ASC"
+    );
+    $adminEmails = $adminStmt->fetchAll(PDO::FETCH_COLUMN);
+    jsonOut(['ok' => true, 'notMember' => true, 'admins' => $adminEmails]);
 }
 
 // Invalidate existing codes and insert new one atomically

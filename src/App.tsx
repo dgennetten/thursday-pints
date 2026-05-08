@@ -22,7 +22,7 @@ const APP_VERSION = packageJson.version;
 type ViewMode = 'breweries' | 'ranked' | 'tour';
 
 function App() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('tour');
   const [visits, setVisits] = useState<Visit[]>([]);
   const [breweriesData, setBreweriesData] = useState<Map<string, { lat: number; lng: number; address: string; status: string }>>(new Map() as Map<string, { lat: number; lng: number; address: string; status: string }>);
@@ -37,7 +37,6 @@ function App() {
   const [photoViewDate, setPhotoViewDate]       = useState<string | null>(null);
   const [photoViewBrewery, setPhotoViewBrewery] = useState<string | null>(null);
   const [showPhotoModal, setShowPhotoModal]     = useState(false);
-  const [showPhotoGate, setShowPhotoGate]       = useState(false);
   const buttonsContainerRef = useRef<HTMLDivElement>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const hasUserInteracted = useRef(false);
@@ -229,7 +228,7 @@ function App() {
     setPhotoViewDate(date);
     setPhotoViewBrewery(breweryName);
     if (!user) {
-      setShowPhotoGate(true);
+      setShowAdminLogin(true);
     } else {
       setShowPhotoModal(true);
     }
@@ -265,12 +264,13 @@ function App() {
       {showAdminLogin && (
         <AdminLoginModal
           onClose={() => setShowAdminLogin(false)}
+          forPhotos={!!photoViewDate}
           onLoginSuccess={(role) => {
             setShowAdminLogin(false);
-            if (role === 'admin' || role === 'superadmin') {
-              setShowAdminPanel(true);
-            } else if (photoViewDate) {
+            if (photoViewDate) {
               setShowPhotoModal(true);
+            } else if (role === 'admin' || role === 'superadmin') {
+              setShowAdminPanel(true);
             }
           }}
         />
@@ -289,28 +289,7 @@ function App() {
           onClose={() => { setShowPhotoModal(false); setPhotoViewDate(null); setPhotoViewBrewery(null); }}
         />
       )}
-      {showPhotoGate && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowPhotoGate(false)}
-        >
-          <div
-            className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6"
-            onClick={e => e.stopPropagation()}
-          >
-            <h2 className="text-base font-semibold text-gray-900 mb-2">Members Only</h2>
-            <p className="text-sm text-gray-600">
-              Must be logged in. Provide ThursdayPints.com Admin with your email via WhatsApp.
-            </p>
-            <button
-              onClick={() => setShowPhotoGate(false)}
-              className="mt-4 w-full py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+
       <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
@@ -467,6 +446,9 @@ function App() {
           </p>
           <p className="text-center text-xs text-gray-400 mt-2">
             Version {APP_VERSION} • <a href="mailto:feedback@thursdaypints.com" className="text-blue-600 hover:underline">Send Feedback!</a> • <a href="mailto:errors@thursdaypints.com" className="text-blue-600 hover:underline">Report Errors!</a>
+            {user && (
+              <> • <button onClick={logout} className="text-blue-600 hover:underline">Log out</button></>
+            )}
           </p>
         </div>
       </footer>

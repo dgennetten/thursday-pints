@@ -6,18 +6,20 @@ import { requestOtp, verifyOtp } from '../../services/authService';
 interface Props {
   onClose: () => void;
   onLoginSuccess: (role: string) => void;
+  forPhotos?: boolean;
 }
 
-type Step = 'email' | 'code';
+type Step = 'email' | 'code' | 'notMember';
 
-export default function AdminLoginModal({ onClose, onLoginSuccess }: Props) {
+export default function AdminLoginModal({ onClose, onLoginSuccess, forPhotos }: Props) {
   const { login } = useAuth();
-  const [step, setStep]         = useState<Step>('email');
-  const [email, setEmail]       = useState('');
-  const [code, setCode]         = useState('');
-  const [remember, setRemember] = useState(true);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
+  const [step, setStep]           = useState<Step>('email');
+  const [email, setEmail]         = useState('');
+  const [code, setCode]           = useState('');
+  const [remember, setRemember]   = useState(true);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState('');
+  const [adminList, setAdminList] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { inputRef.current?.focus() }, [step]);
@@ -27,8 +29,13 @@ export default function AdminLoginModal({ onClose, onLoginSuccess }: Props) {
     setError('');
     setLoading(true);
     try {
-      await requestOtp(email.trim());
-      setStep('code');
+      const result = await requestOtp(email.trim());
+      if (result.notMember) {
+        setAdminList(result.admins ?? []);
+        setStep('notMember');
+      } else {
+        setStep('code');
+      }
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -63,10 +70,12 @@ export default function AdminLoginModal({ onClose, onLoginSuccess }: Props) {
         </div>
 
         <div className="px-6 py-5">
-          {step === 'email' ? (
+          {step === 'email' && (
             <form onSubmit={handleEmailSubmit} className="space-y-4">
               <p className="text-sm text-gray-600">
-                Enter your email — we'll send a one-time code.
+                {forPhotos
+                  ? 'Sign in with your member email to view photos. We\'ll send a one-time code.'
+                  : 'Enter your email — we\'ll send a one-time code.'}
               </p>
               <div>
                 <label htmlFor="auth-email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -93,7 +102,9 @@ export default function AdminLoginModal({ onClose, onLoginSuccess }: Props) {
                 {loading ? 'Sending…' : 'Send Code'}
               </button>
             </form>
-          ) : (
+          )}
+
+          {step === 'code' && (
             <form onSubmit={handleCodeSubmit} className="space-y-4">
               <p className="text-sm text-gray-600">
                 Enter the 6-digit code sent to <strong>{email}</strong>. Expires in 10 minutes.
@@ -145,6 +156,30 @@ export default function AdminLoginModal({ onClose, onLoginSuccess }: Props) {
                 ← Use a different email
               </button>
             </form>
+          )}
+
+          {step === 'notMember' && (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-700">
+                <strong>{email}</strong> is not a TP member. Please contact one of the TP admins to be added to TP membership, necessary for viewing photos:
+              </p>
+              {adminList.length > 0 && (
+                <ul className="text-sm text-blue-700 space-y-1 bg-blue-50 border border-blue-200 rounded-md px-3 py-2">
+                  {adminList.map(a => (
+                    <li key={a}>
+                      <a href={`mailto:${a}`} className="hover:underline">{a}</a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button
+                type="button"
+                onClick={() => { setStep('email'); setError(''); }}
+                className="w-full text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                ← Try a different email
+              </button>
+            </div>
           )}
         </div>
       </div>

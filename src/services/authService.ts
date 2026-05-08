@@ -19,13 +19,20 @@ export interface AuthAdmin {
   error?: string
 }
 
-export async function requestOtp(email: string): Promise<void> {
+export interface OtpRequestResult {
+  ok: boolean;
+  notMember?: boolean;
+  admins?: string[];
+}
+
+export async function requestOtp(email: string): Promise<OtpRequestResult> {
   const res = await fetch(`${AUTH_BASE}/request-otp.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   })
   if (!res.ok) throw new Error('Request failed')
+  return await res.json() as OtpRequestResult
 }
 
 export async function verifyOtp(email: string, code: string, remember: boolean): Promise<AuthAdmin> {

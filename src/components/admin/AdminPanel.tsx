@@ -31,7 +31,7 @@ export default function AdminPanel({ onClose, onDataChange }: Props) {
   const tabs: { id: Tab; label: string; icon: typeof CalendarPlus }[] = [
     { id: 'visit',   label: 'Tour Visits', icon: CalendarPlus },
     { id: 'brewery', label: 'Add Brewery', icon: Beer },
-    ...(user?.role === 'superadmin'
+    ...(user?.role === 'superadmin' || user?.role === 'admin'
       ? [{ id: 'admins' as Tab, label: 'Users', icon: Users }]
       : []),
   ];
@@ -103,7 +103,7 @@ export default function AdminPanel({ onClose, onDataChange }: Props) {
               }}
             />
           )}
-          {tab === 'admins' && user?.token && user.role === 'superadmin' && (
+          {tab === 'admins' && user?.token && (user.role === 'superadmin' || user.role === 'admin') && (
             <ManageAdminsPanel token={user.token} />
           )}
         </div>

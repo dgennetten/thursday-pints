@@ -5,9 +5,9 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 // Load visits from MySQL via PHP API
 export async function loadVisitsFromAPI(): Promise<Visit[] | null> {
-  if (!API_BASE) return null;
   try {
-    const response = await fetch(`${API_BASE}/visits.php`);
+    const base = API_BASE || '/api';
+    const response = await fetch(`${base}/visits.php`, { cache: 'no-store' });
     if (!response.ok) return null;
     const visits = await response.json() as Visit[];
     return Array.isArray(visits) && visits.length > 0 ? visits : null;

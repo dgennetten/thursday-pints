@@ -10,11 +10,12 @@ interface Props {
 
 export default function ManageAdminsPanel({ token }: Props) {
   const { user } = useAuth();
+  const isSuperadmin = user?.role === 'superadmin';
   const [admins, setAdmins]     = useState<Admin[]>([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState('');
   const [newEmail, setNewEmail] = useState('');
-  const [newRole, setNewRole]   = useState<'admin' | 'superadmin' | 'member'>('admin');
+  const [newRole, setNewRole]   = useState<'admin' | 'superadmin' | 'member'>('member');
   const [adding, setAdding]     = useState(false);
   const [addError, setAddError] = useState('');
 
@@ -23,7 +24,7 @@ export default function ManageAdminsPanel({ token }: Props) {
       const data = await getAdmins(token);
       setAdmins(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load admins');
+      setError(err instanceof Error ? err.message : 'Failed to load users');
     } finally {
       setLoading(false);
     }
@@ -38,10 +39,10 @@ export default function ManageAdminsPanel({ token }: Props) {
     try {
       await addAdmin(token, newEmail.trim(), newRole);
       setNewEmail('');
-      setNewRole('admin');
+      setNewRole(isSuperadmin ? 'admin' : 'member');
       await load();
     } catch (err) {
-      setAddError(err instanceof Error ? err.message : 'Failed to add admin');
+      setAddError(err instanceof Error ? err.message : 'Failed to add user');
     } finally {
       setAdding(false);
     }
@@ -63,7 +64,7 @@ export default function ManageAdminsPanel({ token }: Props) {
       await deleteAdmin(token, admin.id);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove admin');
+      setError(err instanceof Error ? err.message : 'Failed to remove user');
     }
   }
 
@@ -73,17 +74,18 @@ export default function ManageAdminsPanel({ token }: Props) {
     <div className="space-y-5">
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {/* Admin list */}
+      {/* User list */}
       <div className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden">
         {admins.map(admin => {
           const isMe = admin.email === user?.email;
+          const canModify = isSuperadmin && !isMe && admin.is_active;
           return (
             <div key={admin.id} className={`flex items-center gap-3 px-3 py-2.5 ${!admin.is_active ? 'opacity-40' : ''}`}>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">{admin.email}</p>
                 <p className="text-xs text-gray-500 capitalize">{admin.role}{isMe ? ' (you)' : ''}</p>
               </div>
-              {!isMe && admin.is_active && (
+              {canModify && (
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => handleRoleToggle(admin)}
@@ -111,7 +113,7 @@ export default function ManageAdminsPanel({ token }: Props) {
 
       {/* Add user form */}
       <form onSubmit={handleAdd} className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-700">Add user</h3>
+        <h3 className="text-sm font-semibold text-gray-700">Add {isSuperadmin ? 'user' : 'member'}</h3>
         <input
           type="email"
           required
@@ -121,15 +123,21 @@ export default function ManageAdminsPanel({ token }: Props) {
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <div className="flex gap-2">
-          <select
-            value={newRole}
-            onChange={e => setNewRole(e.target.value as 'admin' | 'superadmin' | 'member')}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="member">User</option>
-            <option value="admin">Admin</option>
-            <option value="superadmin">Superadmin</option>
-          </select>
+          {isSuperadmin ? (
+            <select
+              value={newRole}
+              onChange={e => setNewRole(e.target.value as 'admin' | 'superadmin' | 'member')}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+              <option value="superadmin">Superadmin</option>
+            </select>
+          ) : (
+            <span className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 bg-gray-50">
+              Member
+            </span>
+          )}
           <button
             type="submit"
             disabled={adding}
