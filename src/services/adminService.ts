@@ -71,15 +71,16 @@ export async function verifySession(
 }
 
 export async function getVisits(token: string): Promise<AdminVisit[]> {
-  const res = await authFetch(token, `${API_BASE}/admin/visits.php`);
+  const res = await authFetch(token, `${API_BASE}/admin/visits.php`, { cache: 'no-store' });
   return res.json();
 }
 
-export async function addVisit(token: string, payload: AddVisitPayload): Promise<void> {
-  await authFetch(token, `${API_BASE}/admin/add-visit.php`, {
+export async function addVisit(token: string, payload: AddVisitPayload): Promise<{ id: number }> {
+  const res = await authFetch(token, `${API_BASE}/admin/add-visit.php`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+  return res.json();
 }
 
 export async function updateVisit(token: string, id: number, payload: UpdateVisitPayload): Promise<void> {

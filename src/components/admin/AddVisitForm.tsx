@@ -167,10 +167,10 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
       };
 
       if (isNew) {
-        await addVisit(token, payload);
+        const { id } = await addVisit(token, payload);
         onSuccess();
         setSuccessMsg('Visit added!');
-        await loadAndPosition({ targetDate: date });
+        await loadAndPosition({ targetId: id });
       } else {
         const id = visits[currentIdx].id;
         await updateVisit(token, id, payload);
