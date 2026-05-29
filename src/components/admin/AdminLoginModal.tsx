@@ -161,7 +161,7 @@ export default function AdminLoginModal({ onClose, onLoginSuccess, forPhotos }: 
           {step === 'notMember' && (
             <div className="space-y-4">
               <p className="text-sm text-gray-700">
-                <strong>{email}</strong> is not a TP member. Please contact one of the TP admins to be added to TP membership, necessary for viewing photos:
+                <strong>{email}</strong> is not a TP member. Please contact one of the TP admins to be added to TP membership (necessary for viewing photos). Provide your email and birth month and day:
               </p>
               {adminList.length > 0 && (
                 <ul className="text-sm text-blue-700 space-y-1 bg-blue-50 border border-blue-200 rounded-md px-3 py-2">
