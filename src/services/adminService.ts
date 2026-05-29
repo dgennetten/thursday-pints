@@ -1,4 +1,4 @@
-import { Admin, AdminVisit, AddVisitPayload, AddBreweryPayload, UpdateVisitPayload, Birthday } from '../types';
+import { Admin, AdminVisit, AddVisitPayload, AddBreweryPayload, UpdateVisitPayload, Birthday, Member } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -127,6 +127,12 @@ export async function addAdmin(
       ...(birthMonth != null && birthDay != null ? { birth_month: birthMonth, birth_day: birthDay } : {}),
     }),
   });
+}
+
+export async function fetchMembers(token: string): Promise<Member[]> {
+  const res = await authFetch(token, `${API_BASE}/members.php`);
+  const data = await res.json();
+  return (data.members as Member[]) ?? [];
 }
 
 export async function fetchBirthdays(from: string, to: string): Promise<Birthday[]> {

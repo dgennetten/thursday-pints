@@ -45,6 +45,13 @@ export interface Birthday {
   day: number;
 }
 
+export interface Member {
+  first_name?: string | null;
+  last_name?: string | null;
+  birth_month?: number | null;
+  birth_day?: number | null;
+}
+
 export interface VisitPhoto {
   id: number;
   filename: string;

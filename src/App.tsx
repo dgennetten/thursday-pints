@@ -9,6 +9,7 @@ import WelcomePopup from './components/WelcomePopup';
 import NextBreweryCard from './components/NextBreweryCard';
 import AdminLoginModal from './components/admin/AdminLoginModal';
 import AdminPanel from './components/admin/AdminPanel';
+import MemberPanel from './components/admin/MemberPanel';
 import { RefreshCw, Route, Beer, Star, Map as MapIcon } from 'lucide-react';
 import { loadVisitsFromPublicJSON, loadVisitsFromAPI } from './services/spreadsheetService';
 import { loadBreweriesFromJSON, loadBreweriesFromAPI } from './services/breweryService';
@@ -33,8 +34,9 @@ function App() {
   const [selectedBrewery, setSelectedBrewery] = useState<string | null>(null);
   const [filteredBreweries, setFilteredBreweries] = useState<BreweryWithLocation[]>([]);
   const [showWelcome, setShowWelcome] = useState(false);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showAdminLogin, setShowAdminLogin]   = useState(false);
+  const [showAdminPanel, setShowAdminPanel]   = useState(false);
+  const [showMemberPanel, setShowMemberPanel] = useState(false);
   const [birthdays, setBirthdays]               = useState<Birthday[]>([]);
   const [photoVisitDates, setPhotoVisitDates]   = useState<Set<string>>(new Set());
   const [photoViewDate, setPhotoViewDate]       = useState<string | null>(null);
@@ -284,6 +286,8 @@ function App() {
               setShowPhotoModal(true);
             } else if (role === 'admin' || role === 'superadmin') {
               setShowAdminPanel(true);
+            } else if (role === 'member') {
+              setShowMemberPanel(true);
             }
           }}
         />
@@ -293,6 +297,9 @@ function App() {
           onClose={() => setShowAdminPanel(false)}
           onDataChange={loadData}
         />
+      )}
+      {showMemberPanel && (
+        <MemberPanel onClose={() => setShowMemberPanel(false)} />
       )}
       {showPhotoModal && photoViewDate && photoViewBrewery && user && (
         <PhotoModal
@@ -323,6 +330,8 @@ function App() {
               onClick={() => {
                 if (user && (user.role === 'admin' || user.role === 'superadmin')) {
                   setShowAdminPanel(true);
+                } else if (user && user.role === 'member') {
+                  setShowMemberPanel(true);
                 } else if (!user) {
                   setShowAdminLogin(true);
                 }
