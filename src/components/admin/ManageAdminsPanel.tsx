@@ -29,6 +29,13 @@ export default function ManageAdminsPanel({ token }: Props) {
   const load = useCallback(async () => {
     try {
       const data = await getAdmins(token);
+      data.sort((a, b) => {
+        const la = (a.last_name  ?? '').toLowerCase();
+        const lb = (b.last_name  ?? '').toLowerCase();
+        const fa = (a.first_name ?? '').toLowerCase();
+        const fb = (b.first_name ?? '').toLowerCase();
+        return la !== lb ? la.localeCompare(lb) : fa.localeCompare(fb);
+      });
       setAdmins(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load users');
@@ -122,7 +129,7 @@ export default function ManageAdminsPanel({ token }: Props) {
               <div className="flex-1 min-w-0">
                 {(admin.first_name || admin.last_name) && (
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {[admin.first_name, admin.last_name].filter(Boolean).join(' ')}
+                    {[admin.last_name, admin.first_name].filter(Boolean).join(', ')}
                   </p>
                 )}
                 <p className={`truncate ${admin.first_name || admin.last_name ? 'text-xs text-gray-400' : 'text-sm font-medium text-gray-900'}`}>{admin.email}</p>
