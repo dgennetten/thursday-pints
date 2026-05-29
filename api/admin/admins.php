@@ -20,13 +20,14 @@ try {
     if ($method === 'GET') {
         $me = requireAuth($pdo, ['admin', 'superadmin']);
         $stmt = $pdo->query(
-            'SELECT id, email, role, is_active, created_at FROM admins ORDER BY created_at ASC'
+            'SELECT id, email, role, is_active, created_at, birth_month, birth_day FROM admins ORDER BY created_at ASC'
         );
         $admins = $stmt->fetchAll();
-        // Cast types
         foreach ($admins as &$a) {
-            $a['id']        = (int)$a['id'];
-            $a['is_active'] = (bool)$a['is_active'];
+            $a['id']          = (int)$a['id'];
+            $a['is_active']   = (bool)$a['is_active'];
+            $a['birth_month'] = $a['birth_month'] !== null ? (int)$a['birth_month'] : null;
+            $a['birth_day']   = $a['birth_day']   !== null ? (int)$a['birth_day']   : null;
         }
         echo json_encode($admins, JSON_UNESCAPED_UNICODE);
         exit;
@@ -54,10 +55,17 @@ try {
             exit;
         }
 
+        $birthMonth = isset($body['birth_month']) && $body['birth_month'] !== '' ? (int)$body['birth_month'] : null;
+        $birthDay   = isset($body['birth_day'])   && $body['birth_day']   !== '' ? (int)$body['birth_day']   : null;
+        if ($birthMonth !== null && ($birthMonth < 1 || $birthMonth > 12)) $birthMonth = null;
+        if ($birthDay   !== null && ($birthDay   < 1 || $birthDay   > 31)) $birthDay   = null;
+        // Require both or neither
+        if ($birthMonth === null || $birthDay === null) { $birthMonth = null; $birthDay = null; }
+
         $stmt = $pdo->prepare(
-            'INSERT INTO admins (email, role, created_by) VALUES (?, ?, ?)'
+            'INSERT INTO admins (email, role, created_by, birth_month, birth_day) VALUES (?, ?, ?, ?, ?)'
         );
-        $stmt->execute([$email, $role, $me['id']]);
+        $stmt->execute([$email, $role, $me['id'], $birthMonth, $birthDay]);
 
         echo json_encode(['ok' => true, 'id' => (int)$pdo->lastInsertId()]);
         exit;

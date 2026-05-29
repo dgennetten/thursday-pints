@@ -33,6 +33,14 @@ export interface Admin {
   role: 'admin' | 'superadmin' | 'member';
   is_active: boolean;
   created_at: string;
+  birth_month?: number | null;
+  birth_day?: number | null;
+}
+
+export interface Birthday {
+  name: string;
+  month: number;
+  day: number;
 }
 
 export interface VisitPhoto {

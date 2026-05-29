@@ -7,7 +7,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 export async function loadVisitsFromAPI(): Promise<Visit[] | null> {
   try {
     const base = API_BASE || '/api';
-    const response = await fetch(`${base}/visits.php`, { cache: 'no-store' });
+    const response = await fetch(`${base}/visits.php?v=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) return null;
     const visits = await response.json() as Visit[];
     return Array.isArray(visits) && visits.length > 0 ? visits : null;

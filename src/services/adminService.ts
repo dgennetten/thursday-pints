@@ -1,4 +1,4 @@
-import { Admin, AdminVisit, AddVisitPayload, AddBreweryPayload, UpdateVisitPayload } from '../types';
+import { Admin, AdminVisit, AddVisitPayload, AddBreweryPayload, UpdateVisitPayload, Birthday } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -111,12 +111,30 @@ export async function getAdmins(token: string): Promise<Admin[]> {
 export async function addAdmin(
   token: string,
   email: string,
-  role: 'admin' | 'superadmin' | 'member'
+  role: 'admin' | 'superadmin' | 'member',
+  birthMonth?: number,
+  birthDay?: number
 ): Promise<void> {
   await authFetch(token, `${API_BASE}/admin/admins.php`, {
     method: 'POST',
-    body: JSON.stringify({ email, role }),
+    body: JSON.stringify({
+      email,
+      role,
+      ...(birthMonth != null && birthDay != null ? { birth_month: birthMonth, birth_day: birthDay } : {}),
+    }),
   });
+}
+
+export async function fetchBirthdays(from: string, to: string): Promise<Birthday[]> {
+  try {
+    const base = API_BASE || '/api';
+    const res = await fetch(`${base}/birthdays.php?from=${from}&to=${to}`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.birthdays as Birthday[]) ?? [];
+  } catch {
+    return [];
+  }
 }
 
 export async function updateAdminRole(

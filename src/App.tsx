@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Visit, BreweryWithLocation } from './types';
-import { processVisits, mergeBreweryStatsWithAllBreweries } from './utils';
+import { processVisits, mergeBreweryStatsWithAllBreweries, getNextThursday } from './utils';
 import BreweryList from './components/BreweryList';
 import VisitList from './components/VisitList';
 import ToggleButton from './components/ToggleButton';
@@ -13,9 +13,11 @@ import { RefreshCw, Route, Beer, Star, Map as MapIcon } from 'lucide-react';
 import { loadVisitsFromPublicJSON, loadVisitsFromAPI } from './services/spreadsheetService';
 import { loadBreweriesFromJSON, loadBreweriesFromAPI } from './services/breweryService';
 import { fetchPhotoAvailability } from './services/photoService';
+import { fetchBirthdays } from './services/adminService';
 import { useAuth } from './contexts/AuthContext';
 import PhotoModal from './components/PhotoModal';
 import packageJson from '../package.json';
+import { Birthday } from './types';
 
 const APP_VERSION = packageJson.version;
 
@@ -33,6 +35,7 @@ function App() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [birthdays, setBirthdays]               = useState<Birthday[]>([]);
   const [photoVisitDates, setPhotoVisitDates]   = useState<Set<string>>(new Set());
   const [photoViewDate, setPhotoViewDate]       = useState<string | null>(null);
   const [photoViewBrewery, setPhotoViewBrewery] = useState<string | null>(null);
@@ -52,6 +55,16 @@ function App() {
 
       if (publicVisits && publicVisits.length > 0) {
         setVisits(publicVisits);
+
+        // Fire off birthday fetch for the current tour week (last visit → next Thursday)
+        const latestWithNext = publicVisits
+          .filter(v => v.nextBrewery)
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+        if (latestWithNext) {
+          fetchBirthdays(latestWithNext.date, getNextThursday(latestWithNext.date))
+            .then(setBirthdays)
+            .catch(() => {});
+        }
       }
 
       if (breweries) {
@@ -330,10 +343,11 @@ function App() {
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
           
           return latestVisitWithNext ? (
-            <NextBreweryCard 
-              nextBrewery={latestVisitWithNext.nextBrewery!} 
+            <NextBreweryCard
+              nextBrewery={latestVisitWithNext.nextBrewery!}
               breweryStats={breweryStats}
               date={latestVisitWithNext.date}
+              birthdays={birthdays}
             />
           ) : null;
         })()}

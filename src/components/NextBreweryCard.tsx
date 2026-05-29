@@ -1,22 +1,25 @@
-import { BreweryStats } from '../types';
+import { BreweryStats, Birthday } from '../types';
 import { formatDate, getNextThursday } from '../utils';
 import { MapPin } from 'lucide-react';
+
+const MONTH_NAMES = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+];
 
 interface NextBreweryCardProps {
   nextBrewery: string;
   breweryStats: BreweryStats[];
   date: string;
+  birthdays?: Birthday[];
 }
 
-export default function NextBreweryCard({ nextBrewery, breweryStats, date }: NextBreweryCardProps) {
-  // Check if nextBrewery matches a brewery name
+export default function NextBreweryCard({ nextBrewery, breweryStats, date, birthdays = [] }: NextBreweryCardProps) {
   const matchingBrewery = breweryStats.find(
     brewery => brewery.name.toLowerCase() === nextBrewery.toLowerCase().trim()
   );
 
   const isLimerick = !matchingBrewery;
-  
-  // Calculate the next Thursday after the visit date
   const nextThursdayDate = getNextThursday(date);
 
   return (
@@ -46,6 +49,20 @@ export default function NextBreweryCard({ nextBrewery, breweryStats, date }: Nex
           </h3>
           <p className="text-base sm:text-lg text-gray-600 italic">
             Last visited {formatDate(matchingBrewery.lastVisitDate)}
+          </p>
+        </div>
+      )}
+
+      {birthdays.length > 0 && (
+        <div className="mt-4 pt-3 border-t border-blue-200">
+          <p className="text-sm text-blue-800">
+            🎂 <span className="font-semibold">Birthday shoutout:</span>{' '}
+            {birthdays.map((b, i) => (
+              <span key={i}>
+                {i > 0 && ' • '}
+                {b.name} <span className="text-blue-600">({MONTH_NAMES[b.month - 1]} {b.day})</span>
+              </span>
+            ))}
           </p>
         </div>
       )}
