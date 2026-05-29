@@ -19,7 +19,7 @@ if (!$from || !$to
 try {
     $pdo  = getDbConnection();
     $stmt = $pdo->query(
-        'SELECT email, birth_month, birth_day
+        'SELECT email, first_name, last_name, birth_month, birth_day
          FROM admins
          WHERE is_active = 1 AND birth_month IS NOT NULL AND birth_day IS NOT NULL'
     );
@@ -40,8 +40,12 @@ try {
         foreach ([$fromYear, $fromYear + 1] as $year) {
             $bday = DateTimeImmutable::createFromFormat('Y-n-j', "$year-$month-$day");
             if ($bday && $bday >= $fromDt && $bday <= $toDt) {
-                $localPart = explode('@', $m['email'])[0];
-                $name      = ucfirst(strtolower(preg_replace('/[^a-zA-Z]/', '', $localPart)));
+                if (!empty($m['first_name']) || !empty($m['last_name'])) {
+                    $name = trim(($m['first_name'] ?? '') . ' ' . ($m['last_name'] ?? ''));
+                } else {
+                    $localPart = explode('@', $m['email'])[0];
+                    $name      = ucfirst(strtolower(preg_replace('/[^a-zA-Z]/', '', $localPart)));
+                }
                 $birthdays[] = ['name' => $name, 'month' => $month, 'day' => $day];
                 break;
             }

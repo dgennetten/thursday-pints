@@ -18,6 +18,8 @@ export default function ManageAdminsPanel({ token }: Props) {
   const [error, setError]           = useState('');
   const [newEmail, setNewEmail]     = useState('');
   const [newRole, setNewRole]       = useState<'admin' | 'superadmin' | 'member'>('member');
+  const [firstName, setFirstName]   = useState('');
+  const [lastName, setLastName]     = useState('');
   const [birthMonth, setBirthMonth] = useState<number | ''>('');
   const [birthDay, setBirthDay]     = useState<number | ''>('');
   const [adding, setAdding]         = useState(false);
@@ -46,11 +48,15 @@ export default function ManageAdminsPanel({ token }: Props) {
         token,
         newEmail.trim(),
         newRole,
+        firstName.trim() || undefined,
+        lastName.trim()  || undefined,
         birthMonth !== '' ? birthMonth : undefined,
         birthDay   !== '' ? birthDay   : undefined,
       );
       setNewEmail('');
       setNewRole(isSuperadmin ? 'admin' : 'member');
+      setFirstName('');
+      setLastName('');
       setBirthMonth('');
       setBirthDay('');
       await load();
@@ -114,7 +120,12 @@ export default function ManageAdminsPanel({ token }: Props) {
           return (
             <div key={admin.id} className={`flex items-center gap-3 px-3 py-2.5 ${!admin.is_active ? 'opacity-40' : ''}`}>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{admin.email}</p>
+                {(admin.first_name || admin.last_name) && (
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {[admin.first_name, admin.last_name].filter(Boolean).join(' ')}
+                  </p>
+                )}
+                <p className={`truncate ${admin.first_name || admin.last_name ? 'text-xs text-gray-400' : 'text-sm font-medium text-gray-900'}`}>{admin.email}</p>
                 <p className="text-xs text-gray-500 capitalize flex items-center gap-1.5">
                   {admin.role}{isMe ? ' (you)' : ''}
                   {hasBirthday && (
@@ -154,6 +165,22 @@ export default function ManageAdminsPanel({ token }: Props) {
       {/* Add user form */}
       <form onSubmit={handleAdd} className="space-y-3">
         <h3 className="text-sm font-semibold text-gray-700">Add {isSuperadmin ? 'user' : 'member'}</h3>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={firstName}
+            onChange={e => setFirstName(e.target.value)}
+            placeholder="First name"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="text"
+            value={lastName}
+            onChange={e => setLastName(e.target.value)}
+            placeholder="Last name"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
         <input
           type="email"
           required

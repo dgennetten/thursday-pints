@@ -112,6 +112,8 @@ export async function addAdmin(
   token: string,
   email: string,
   role: 'admin' | 'superadmin' | 'member',
+  firstName?: string,
+  lastName?: string,
   birthMonth?: number,
   birthDay?: number
 ): Promise<void> {
@@ -120,6 +122,8 @@ export async function addAdmin(
     body: JSON.stringify({
       email,
       role,
+      ...(firstName ? { first_name: firstName } : {}),
+      ...(lastName  ? { last_name:  lastName  } : {}),
       ...(birthMonth != null && birthDay != null ? { birth_month: birthMonth, birth_day: birthDay } : {}),
     }),
   });

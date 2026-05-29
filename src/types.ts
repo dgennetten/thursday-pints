@@ -30,6 +30,8 @@ export interface BreweryWithLocation extends BreweryStats {
 export interface Admin {
   id: number;
   email: string;
+  first_name?: string | null;
+  last_name?: string | null;
   role: 'admin' | 'superadmin' | 'member';
   is_active: boolean;
   created_at: string;
