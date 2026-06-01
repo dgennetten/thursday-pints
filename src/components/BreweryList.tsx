@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
-import { MapPin, Calendar, Search, X, ChevronsUpDown } from 'lucide-react';
+import { MapPin, Calendar, Search, X, ChevronsUpDown, Camera } from 'lucide-react';
 
 interface BreweryListProps {
   breweries: BreweryWithLocation[];
@@ -11,6 +11,8 @@ interface BreweryListProps {
   onBrewerySelect?: (name: string | null) => void;
   selectedBrewery?: string | null;
   setFilteredBreweries?: (breweries: BreweryWithLocation[]) => void;
+  photoCountByBrewery?: Map<string, number>;
+  onPhotoClick?: (breweryName: string) => void;
 }
 
 export default function BreweryList({ 
@@ -20,7 +22,9 @@ export default function BreweryList({
   mapActive = false,
   onBrewerySelect,
   selectedBrewery,
-  setFilteredBreweries
+  setFilteredBreweries,
+  photoCountByBrewery,
+  onPhotoClick,
 }: BreweryListProps) {
   const [filterText, setFilterText] = useState('');
   const [isReversed, setIsReversed] = useState(false);
@@ -145,6 +149,26 @@ export default function BreweryList({
                     <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
                       Closed
                     </span>
+                  )}
+                  {(photoCountByBrewery?.get(brewery.name) ?? 0) > 0 && (
+                    <button
+                      type="button"
+                      onClick={e => { e.stopPropagation(); onPhotoClick?.(brewery.name); }}
+                      className="relative text-blue-500 hover:text-blue-700 transition-colors"
+                      title="View photos"
+                      aria-label={
+                        (photoCountByBrewery?.get(brewery.name) ?? 0) > 1
+                          ? `View photos from ${photoCountByBrewery?.get(brewery.name)} visits`
+                          : 'View visit photos'
+                      }
+                    >
+                      <Camera className="w-4 h-4" />
+                      {(photoCountByBrewery?.get(brewery.name) ?? 0) > 1 && (
+                        <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-0.5 flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-semibold leading-none">
+                          {photoCountByBrewery?.get(brewery.name)}
+                        </span>
+                      )}
+                    </button>
                   )}
                 </div>
                 {brewery.lastVisitDate && (

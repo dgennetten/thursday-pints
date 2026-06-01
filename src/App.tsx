@@ -39,7 +39,7 @@ function App() {
   const [showMemberPanel, setShowMemberPanel] = useState(false);
   const [birthdays, setBirthdays]               = useState<Birthday[]>([]);
   const [photoVisitDates, setPhotoVisitDates]   = useState<Set<string>>(new Set());
-  const [photoViewDate, setPhotoViewDate]       = useState<string | null>(null);
+  const [photoViewDates, setPhotoViewDates]     = useState<string[]>([]);
   const [photoViewBrewery, setPhotoViewBrewery] = useState<string | null>(null);
   const [showPhotoModal, setShowPhotoModal]     = useState(false);
   const buttonsContainerRef = useRef<HTMLDivElement>(null);
@@ -196,6 +196,16 @@ function App() {
     
     return sorted;
   }, [breweriesWithLocation, viewMode]);
+
+  const breweryPhotoCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const visit of visits) {
+      if (photoVisitDates.has(visit.date)) {
+        counts.set(visit.breweryName, (counts.get(visit.breweryName) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }, [visits, photoVisitDates]);
   
   const listTitle = viewMode === 'breweries'
     ? 'By Last Visit'
@@ -239,14 +249,37 @@ function App() {
   }, [displayedBreweries, selectedBrewery, filteredBreweries]);
 
 
-  function handlePhotoClick(date: string, breweryName: string) {
-    setPhotoViewDate(date);
+  function openPhotoView(dates: string[], breweryName: string) {
+    setPhotoViewDates(dates);
     setPhotoViewBrewery(breweryName);
     if (!user) {
       setShowAdminLogin(true);
     } else {
       setShowPhotoModal(true);
     }
+  }
+
+  function handlePhotoClick(date: string, breweryName: string) {
+    openPhotoView([date], breweryName);
+  }
+
+  function handleBreweryPhotoClick(breweryName: string) {
+    const dates = [
+      ...new Set(
+        visits
+          .filter(v => v.breweryName === breweryName && photoVisitDates.has(v.date))
+          .map(v => v.date),
+      ),
+    ].sort();
+    if (dates.length > 0) {
+      openPhotoView(dates, breweryName);
+    }
+  }
+
+  function closePhotoView() {
+    setShowPhotoModal(false);
+    setPhotoViewDates([]);
+    setPhotoViewBrewery(null);
   }
 
   if (loading) {
@@ -279,10 +312,10 @@ function App() {
       {showAdminLogin && (
         <AdminLoginModal
           onClose={() => setShowAdminLogin(false)}
-          forPhotos={!!photoViewDate}
+          forPhotos={photoViewDates.length > 0}
           onLoginSuccess={(role) => {
             setShowAdminLogin(false);
-            if (photoViewDate) {
+            if (photoViewDates.length > 0) {
               setShowPhotoModal(true);
             } else if (role === 'admin' || role === 'superadmin') {
               setShowAdminPanel(true);
@@ -301,12 +334,12 @@ function App() {
       {showMemberPanel && (
         <MemberPanel onClose={() => setShowMemberPanel(false)} />
       )}
-      {showPhotoModal && photoViewDate && photoViewBrewery && user && (
+      {showPhotoModal && photoViewDates.length > 0 && photoViewBrewery && user && (
         <PhotoModal
-          date={photoViewDate}
+          dates={photoViewDates}
           breweryName={photoViewBrewery}
           token={user.token}
-          onClose={() => { setShowPhotoModal(false); setPhotoViewDate(null); setPhotoViewBrewery(null); }}
+          onClose={closePhotoView}
         />
       )}
 
@@ -440,6 +473,8 @@ function App() {
                     onBrewerySelect={setSelectedBrewery}
                     selectedBrewery={selectedBrewery}
                     setFilteredBreweries={setFilteredBreweries}
+                    photoCountByBrewery={breweryPhotoCounts}
+                    onPhotoClick={handleBreweryPhotoClick}
                   />
                 )}
               </div>
