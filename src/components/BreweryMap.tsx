@@ -38,31 +38,135 @@ function createColoredIcon(color: string): L.Icon {
   });
 }
 
-// Sync map view from props when selection or computed overview center/zoom changes.
-// fitBounds ("zoom to all") is not used here — only MapFullscreenHandler does that on fullscreen toggle.
-function MapUpdater({ center, zoom, selectedBrewery }: { center: [number, number]; zoom: number; selectedBrewery: string | null }) {
-  const map = useMap();
+const FOCUS_ZOOM = 17;
+const TRAVEL_ZOOM = 12;
 
-  const prevCenterRef = useRef<[number, number] | null>(null);
-  const prevZoomRef = useRef<number | null>(null);
-  const prevSelectedBreweryRef = useRef<string | null>(null);
+function breweryCoords(breweries: BreweryWithLocation[], name: string): L.LatLngTuple | null {
+  const brewery = breweries.find(b => b.name === name && b.lat != null && b.lng != null);
+  if (!brewery?.lat || !brewery?.lng) return null;
+  return [brewery.lat, brewery.lng];
+}
+
+function runTravelSequence(
+  map: L.Map,
+  target: L.LatLngTuple,
+  targetZoom: number,
+  animGen: number,
+  animGenRef: { current: number },
+  timeoutsRef: { current: number[] },
+) {
+  const isActive = () => animGenRef.current === animGen;
+  const start = map.getCenter();
+  const travelZoom = Math.min(map.getZoom(), targetZoom, TRAVEL_ZOOM);
+
+  const schedule = (fn: () => void, ms: number) => {
+    const id = window.setTimeout(() => {
+      if (isActive()) fn();
+    }, ms);
+    timeoutsRef.current.push(id);
+  };
+
+  map.flyTo([start.lat, start.lng], travelZoom, { duration: 0.32 });
+  schedule(() => {
+    map.flyTo(target, travelZoom, { duration: 0.48 });
+    schedule(() => {
+      map.flyTo(target, targetZoom, { duration: 0.36 });
+    }, 480);
+  }, 320);
+}
+
+// Drives map view from selection, hover, and overview — hover does not flow through overview props.
+function MapUpdater({
+  overviewCenter,
+  overviewZoom,
+  breweries,
+  selectedBrewery,
+  hoveredBrewery,
+  mapHoverEnabled,
+}: {
+  overviewCenter: [number, number];
+  overviewZoom: number;
+  breweries: BreweryWithLocation[];
+  selectedBrewery: string | null;
+  hoveredBrewery: string | null;
+  mapHoverEnabled: boolean;
+}) {
+  const map = useMap();
+  const activeTargetRef = useRef<string | null>(null);
+  const animGenRef = useRef(0);
+  const timeoutsRef = useRef<number[]>([]);
+
+  const clearScheduled = useCallback(() => {
+    timeoutsRef.current.forEach(id => window.clearTimeout(id));
+    timeoutsRef.current = [];
+  }, []);
+
+  useEffect(() => () => {
+    animGenRef.current += 1;
+    clearScheduled();
+  }, [clearScheduled]);
 
   useEffect(() => {
-    const centerChanged =
-      prevCenterRef.current === null ||
-      prevCenterRef.current[0] !== center[0] ||
-      prevCenterRef.current[1] !== center[1];
-    const zoomChanged = prevZoomRef.current === null || prevZoomRef.current !== zoom;
-    const selectedChanged = prevSelectedBreweryRef.current !== selectedBrewery;
+    let targetKey: string;
+    let coords: L.LatLngTuple | null = null;
+    let targetZoom = overviewZoom;
 
-    if (centerChanged || zoomChanged || selectedChanged) {
-      map.closePopup();
-      map.setView(center, zoom);
-      prevCenterRef.current = center;
-      prevZoomRef.current = zoom;
-      prevSelectedBreweryRef.current = selectedBrewery;
+    if (selectedBrewery) {
+      coords = breweryCoords(breweries, selectedBrewery);
+      targetKey = `selected:${selectedBrewery}`;
+      targetZoom = FOCUS_ZOOM;
+    } else if (mapHoverEnabled && hoveredBrewery) {
+      coords = breweryCoords(breweries, hoveredBrewery);
+      targetKey = `hover:${hoveredBrewery}`;
+      targetZoom = FOCUS_ZOOM;
+    } else {
+      targetKey = 'overview';
     }
-  }, [map, center, zoom, selectedBrewery]);
+
+    if (targetKey !== 'overview' && !coords) {
+      return;
+    }
+
+    if (targetKey === activeTargetRef.current) {
+      return;
+    }
+
+    const prevKey = activeTargetRef.current;
+    activeTargetRef.current = targetKey;
+
+    const isHoverHop =
+      mapHoverEnabled &&
+      !selectedBrewery &&
+      targetKey.startsWith('hover:') &&
+      prevKey != null &&
+      prevKey.startsWith('hover:');
+
+    map.closePopup();
+    clearScheduled();
+    animGenRef.current += 1;
+    const animGen = animGenRef.current;
+
+    if (targetKey === 'overview') {
+      map.flyTo(overviewCenter, overviewZoom, { duration: 0.5 });
+      return;
+    }
+
+    const position = coords!;
+    if (isHoverHop) {
+      runTravelSequence(map, position, targetZoom, animGen, animGenRef, timeoutsRef);
+    } else {
+      map.flyTo(position, targetZoom, { duration: 0.55 });
+    }
+  }, [
+    map,
+    overviewCenter,
+    overviewZoom,
+    breweries,
+    selectedBrewery,
+    hoveredBrewery,
+    mapHoverEnabled,
+    clearScheduled,
+  ]);
 
   return null;
 }
@@ -124,13 +228,23 @@ function MapFullscreenHandler({ breweries }: { breweries: BreweryWithLocation[] 
 
 interface BreweryMapProps {
   breweries: BreweryWithLocation[];
-  center: [number, number];
-  zoom: number;
+  overviewCenter: [number, number];
+  overviewZoom: number;
   viewMode: 'breweries' | 'ranked' | 'tour';
   selectedBrewery: string | null;
+  hoveredBrewery: string | null;
+  mapHoverEnabled: boolean;
 }
 
-export default function BreweryMap({ breweries, center, zoom, viewMode, selectedBrewery }: BreweryMapProps) {
+export default function BreweryMap({
+  breweries,
+  overviewCenter,
+  overviewZoom,
+  viewMode,
+  selectedBrewery,
+  hoveredBrewery,
+  mapHoverEnabled,
+}: BreweryMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -202,8 +316,8 @@ export default function BreweryMap({ breweries, center, zoom, viewMode, selected
       className="h-full w-full rounded-lg overflow-hidden border border-gray-200 relative"
     >
       <MapContainer
-        center={center}
-        zoom={zoom}
+        center={overviewCenter}
+        zoom={overviewZoom}
         style={{ height: '100%', width: '100%' }}
         className="z-0"
         scrollWheelZoom={true}
@@ -212,7 +326,14 @@ export default function BreweryMap({ breweries, center, zoom, viewMode, selected
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapUpdater center={center} zoom={zoom} selectedBrewery={selectedBrewery} />
+        <MapUpdater
+          overviewCenter={overviewCenter}
+          overviewZoom={overviewZoom}
+          breweries={breweries}
+          selectedBrewery={selectedBrewery}
+          hoveredBrewery={hoveredBrewery}
+          mapHoverEnabled={mapHoverEnabled}
+        />
         <MapFullscreenHandler breweries={breweriesWithLocation} />
         {breweriesWithLocation.map((brewery, index) => {
           if (!brewery.lat || !brewery.lng) return null;

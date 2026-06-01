@@ -32,6 +32,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [showMap, setShowMap] = useState(false);
   const [selectedBrewery, setSelectedBrewery] = useState<string | null>(null);
+  const [hoveredBrewery, setHoveredBrewery] = useState<string | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [filteredBreweries, setFilteredBreweries] = useState<BreweryWithLocation[]>([]);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showAdminLogin, setShowAdminLogin]   = useState(false);
@@ -45,6 +47,22 @@ function App() {
   const buttonsContainerRef = useRef<HTMLDivElement>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const hasUserInteracted = useRef(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    if (!showMap || !isDesktop) {
+      setHoveredBrewery(null);
+    }
+  }, [showMap, isDesktop]);
+
+  const mapHoverEnabled = showMap && isDesktop;
 
   // Extracted as a callback so the admin panel can trigger a refresh
   const loadData = useCallback(async () => {
@@ -213,10 +231,20 @@ function App() {
     ? 'By Popularity'
     : 'By Tour Date';
 
+  const findBreweryWithLocation = useCallback(
+    (name: string) => breweriesWithLocation.find(b => b.name === name && b.lat != null && b.lng != null),
+    [breweriesWithLocation],
+  );
+
   // Calculate map center and zoom based on displayed breweries
+  const mapBreweries = useMemo(
+    () => (filteredBreweries.length > 0 ? filteredBreweries : displayedBreweries),
+    [filteredBreweries, displayedBreweries],
+  );
+
   const mapCenter = useMemo(() => {
     if (selectedBrewery) {
-      const brewery = displayedBreweries.find(b => b.name === selectedBrewery);
+      const brewery = findBreweryWithLocation(selectedBrewery);
       if (brewery?.lat && brewery?.lng) {
         return { center: [brewery.lat, brewery.lng] as [number, number], zoom: 17 };
       }
@@ -246,7 +274,7 @@ function App() {
     else zoom = 10;
     
     return { center: [centerLat, centerLng] as [number, number], zoom };
-  }, [displayedBreweries, selectedBrewery, filteredBreweries]);
+  }, [displayedBreweries, selectedBrewery, filteredBreweries, findBreweryWithLocation]);
 
 
   function openPhotoView(dates: string[], breweryName: string) {
@@ -455,6 +483,8 @@ function App() {
                     mapActive={showMap}
                     onBrewerySelect={setSelectedBrewery}
                     selectedBrewery={selectedBrewery}
+                    mapHoverEnabled={mapHoverEnabled}
+                    onBreweryHover={setHoveredBrewery}
                     breweriesData={(() => {
                       const map = new Map() as Map<string, BreweryWithLocation>;
                       breweriesWithLocation.forEach(b => map.set(b.name, b));
@@ -472,6 +502,8 @@ function App() {
                     mapActive={showMap}
                     onBrewerySelect={setSelectedBrewery}
                     selectedBrewery={selectedBrewery}
+                    mapHoverEnabled={mapHoverEnabled}
+                    onBreweryHover={setHoveredBrewery}
                     setFilteredBreweries={setFilteredBreweries}
                     photoCountByBrewery={breweryPhotoCounts}
                     onPhotoClick={handleBreweryPhotoClick}
@@ -483,11 +515,13 @@ function App() {
               {showMap && (
                 <div className="h-full min-w-0">
                   <BreweryMap
-                    breweries={filteredBreweries.length > 0 ? filteredBreweries : displayedBreweries}
-                    center={mapCenter.center}
-                    zoom={mapCenter.zoom}
+                    breweries={mapBreweries}
+                    overviewCenter={mapCenter.center}
+                    overviewZoom={mapCenter.zoom}
                     viewMode={viewMode}
                     selectedBrewery={selectedBrewery}
+                    hoveredBrewery={hoveredBrewery}
+                    mapHoverEnabled={mapHoverEnabled}
                   />
                 </div>
               )}

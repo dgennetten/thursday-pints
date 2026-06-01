@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Visit, BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
 import { MapPin, Search, X, Calendar, ChevronsUpDown, Camera } from 'lucide-react';
+import { handleBreweryListMouseLeave } from '../mapHover';
 
 interface VisitListProps {
   visits: Visit[];
@@ -14,6 +15,8 @@ interface VisitListProps {
   setFilteredBreweries?: (breweries: BreweryWithLocation[]) => void;
   photoVisitDates?: Set<string>;
   onPhotoClick?: (date: string, breweryName: string) => void;
+  mapHoverEnabled?: boolean;
+  onBreweryHover?: (name: string | null) => void;
 }
 
 export default function VisitList({
@@ -27,6 +30,8 @@ export default function VisitList({
   setFilteredBreweries,
   photoVisitDates,
   onPhotoClick,
+  mapHoverEnabled = false,
+  onBreweryHover,
 }: VisitListProps) {
   const [filterText, setFilterText] = useState('');
   const [isReversed, setIsReversed] = useState(false);
@@ -138,7 +143,10 @@ export default function VisitList({
           </div>
         </div>
       </div>
-      <div className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto">
+      <div
+        className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto"
+        onMouseLeave={e => handleBreweryListMouseLeave(e, mapHoverEnabled, () => onBreweryHover?.(null))}
+      >
         {filteredVisits.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">No visits match your filter.</p>
@@ -154,6 +162,9 @@ export default function VisitList({
               if (onBrewerySelect) {
                 onBrewerySelect(selectedBrewery === visit.breweryName ? null : visit.breweryName);
               }
+            }}
+            onMouseEnter={() => {
+              if (mapHoverEnabled) onBreweryHover?.(visit.breweryName);
             }}
           >
             <div className="flex items-start justify-between">

@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
 import { MapPin, Calendar, Search, X, ChevronsUpDown, Camera } from 'lucide-react';
+import { handleBreweryListMouseLeave } from '../mapHover';
 
 interface BreweryListProps {
   breweries: BreweryWithLocation[];
@@ -13,6 +14,8 @@ interface BreweryListProps {
   setFilteredBreweries?: (breweries: BreweryWithLocation[]) => void;
   photoCountByBrewery?: Map<string, number>;
   onPhotoClick?: (breweryName: string) => void;
+  mapHoverEnabled?: boolean;
+  onBreweryHover?: (name: string | null) => void;
 }
 
 export default function BreweryList({ 
@@ -25,6 +28,8 @@ export default function BreweryList({
   setFilteredBreweries,
   photoCountByBrewery,
   onPhotoClick,
+  mapHoverEnabled = false,
+  onBreweryHover,
 }: BreweryListProps) {
   const [filterText, setFilterText] = useState('');
   const [isReversed, setIsReversed] = useState(false);
@@ -120,7 +125,10 @@ export default function BreweryList({
           </div>
         </div>
       </div>
-      <div className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto">
+      <div
+        className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto"
+        onMouseLeave={e => handleBreweryListMouseLeave(e, mapHoverEnabled, () => onBreweryHover?.(null))}
+      >
         {filteredBreweries.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">No breweries match your filter.</p>
@@ -136,6 +144,9 @@ export default function BreweryList({
               if (onBrewerySelect) {
                 onBrewerySelect(selectedBrewery === brewery.name ? null : brewery.name);
               }
+            }}
+            onMouseEnter={() => {
+              if (mapHoverEnabled) onBreweryHover?.(brewery.name);
             }}
           >
             <div className="flex items-start justify-between">
