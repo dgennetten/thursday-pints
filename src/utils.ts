@@ -47,7 +47,7 @@ export function mergeBreweryStatsWithAllBreweries(
   // Create stats for all breweries, using visit stats if available
   const allStats: BreweryStats[] = [];
   
-  // Add all breweries from breweries.json
+  // Add all breweries from the database
   allBreweries.forEach((locationData, breweryName) => {
     if (!locationData) return; // Skip invalid entries
     
@@ -66,7 +66,7 @@ export function mergeBreweryStatsWithAllBreweries(
     }
   });
 
-  // Also add any stats that might not be in breweries.json (edge case)
+  // Also add any stats that might not be in the brewery list (edge case)
   stats.forEach(stat => {
     if (!allBreweries.has(stat.name)) {
       allStats.push(stat);

@@ -1,3 +1,7 @@
+export interface DataChangeOptions {
+  photoDate?: string;
+}
+
 export interface Visit {
   date: string; // ISO date string
   breweryName: string;

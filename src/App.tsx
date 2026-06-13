@@ -11,14 +11,14 @@ import AdminLoginModal from './components/admin/AdminLoginModal';
 import AdminPanel from './components/admin/AdminPanel';
 import MemberPanel from './components/admin/MemberPanel';
 import { RefreshCw, Route, Beer, Star, Map as MapIcon } from 'lucide-react';
-import { loadVisitsFromPublicJSON, loadVisitsFromAPI } from './services/spreadsheetService';
-import { loadBreweriesFromJSON, loadBreweriesFromAPI } from './services/breweryService';
+import { loadVisitsFromAPI } from './services/spreadsheetService';
+import { loadBreweriesFromAPI } from './services/breweryService';
 import { fetchPhotoAvailability } from './services/photoService';
 import { fetchBirthdays } from './services/adminService';
 import { useAuth } from './contexts/AuthContext';
 import PhotoModal from './components/PhotoModal';
 import packageJson from '../package.json';
-import { Birthday } from './types';
+import { Birthday, DataChangeOptions } from './types';
 
 const APP_VERSION = packageJson.version;
 
@@ -30,6 +30,7 @@ function App() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [breweriesData, setBreweriesData] = useState<Map<string, { lat: number; lng: number; address: string; status: string }>>(new Map() as Map<string, { lat: number; lng: number; address: string; status: string }>);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [selectedBrewery, setSelectedBrewery] = useState<string | null>(null);
   const [hoveredBrewery, setHoveredBrewery] = useState<string | null>(null);
@@ -44,6 +45,7 @@ function App() {
   const [photoViewDates, setPhotoViewDates]     = useState<string[]>([]);
   const [photoViewBrewery, setPhotoViewBrewery] = useState<string | null>(null);
   const [showPhotoModal, setShowPhotoModal]     = useState(false);
+  const [photoRefreshKey, setPhotoRefreshKey]   = useState(0);
   const buttonsContainerRef = useRef<HTMLDivElement>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const hasUserInteracted = useRef(false);
@@ -66,49 +68,54 @@ function App() {
 
   // Extracted as a callback so the admin panel can trigger a refresh
   const loadData = useCallback(async () => {
+    setLoadError(null);
     try {
       const [publicVisits, breweries, photoDates] = await Promise.all([
-        loadVisitsFromAPI().then(v => v ?? loadVisitsFromPublicJSON()),
-        loadBreweriesFromAPI().then(b => b ?? loadBreweriesFromJSON()),
+        loadVisitsFromAPI(),
+        loadBreweriesFromAPI(),
         fetchPhotoAvailability().catch(() => [] as string[]),
       ]);
 
-      if (publicVisits && publicVisits.length > 0) {
-        setVisits(publicVisits);
+      setVisits(publicVisits);
 
-        // Fire off birthday fetch for the current tour week (last visit → next Thursday)
-        const latestWithNext = publicVisits
-          .filter(v => v.nextBrewery)
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-        if (latestWithNext) {
-          fetchBirthdays(latestWithNext.date, getNextThursday(latestWithNext.date))
-            .then(setBirthdays)
-            .catch(() => {});
-        }
+      const latestWithNext = publicVisits
+        .filter(v => v.nextBrewery)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      if (latestWithNext) {
+        fetchBirthdays(latestWithNext.date, getNextThursday(latestWithNext.date))
+          .then(setBirthdays)
+          .catch(() => {});
       }
 
-      if (breweries) {
-        const breweriesMap = new Map<string, { lat: number; lng: number; address: string; status: string }>();
-        breweries.forEach(brewery => {
-          breweriesMap.set(brewery.brewery_name, {
-            lat: brewery.latitude,
-            lng: brewery.longitude,
-            address: brewery.brewery_address,
-            status: brewery.status
-          });
+      const breweriesMap = new Map<string, { lat: number; lng: number; address: string; status: string }>();
+      breweries.forEach(brewery => {
+        breweriesMap.set(brewery.brewery_name, {
+          lat: brewery.latitude,
+          lng: brewery.longitude,
+          address: brewery.brewery_address,
+          status: brewery.status
         });
-        setBreweriesData(breweriesMap);
-      }
+      });
+      setBreweriesData(breweriesMap);
 
       setPhotoVisitDates(new Set(photoDates));
     } catch (err) {
       console.error('Error loading data:', err);
+      setLoadError(err instanceof Error ? err.message : 'Failed to load data from API');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Load data from API / public JSON on mount
+  const handleDataChange = useCallback((opts?: DataChangeOptions) => {
+    if (opts?.photoDate) {
+      setPhotoVisitDates(prev => new Set([...prev, opts.photoDate!]));
+    }
+    setPhotoRefreshKey(k => k + 1);
+    void loadData();
+  }, [loadData]);
+
+  // Load data from MySQL API on mount
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -166,7 +173,7 @@ function App() {
 
   const breweryStats = useMemo(() => processVisits(visits), [visits]);
 
-  // Merge brewery stats with all breweries from breweries.json (including zero-visit breweries)
+  // Merge brewery stats with all breweries from the database (including zero-visit breweries)
   const allBreweryStats = useMemo(() => {
     if (breweriesData.size === 0) {
       return breweryStats; // If no brewery data loaded yet, just return stats
@@ -356,7 +363,7 @@ function App() {
       {showAdminPanel && (
         <AdminPanel
           onClose={() => setShowAdminPanel(false)}
-          onDataChange={loadData}
+          onDataChange={handleDataChange}
         />
       )}
       {showMemberPanel && (
@@ -367,6 +374,7 @@ function App() {
           dates={photoViewDates}
           breweryName={photoViewBrewery}
           token={user.token}
+          refreshKey={photoRefreshKey}
           onClose={closePhotoView}
         />
       )}
@@ -422,12 +430,25 @@ function App() {
           ) : null;
         })()}
 
-        {/* Initial Load Message */}
-        {visits.length === 0 && !loading && (
+        {loadError && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-red-900 mb-2">Could not load data</h2>
+            <p className="text-sm text-red-800 mb-4">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => { setLoading(true); loadData(); }}
+              className="text-sm font-medium text-red-700 hover:text-red-900 underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {visits.length === 0 && !loadError && (
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-blue-900 mb-2">Welcome to Thursday Pints Tracker!</h2>
             <p className="text-sm text-blue-800">
-              No visit data found. Please ensure data.json is available.
+              No visits found in the database.
             </p>
           </div>
         )}

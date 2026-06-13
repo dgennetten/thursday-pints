@@ -5,12 +5,13 @@ import { getBreweryNames } from '../../services/adminService';
 import AddVisitForm from './AddVisitForm';
 import AddBreweryForm from './AddBreweryForm';
 import ManageAdminsPanel from './ManageAdminsPanel';
+import type { DataChangeOptions } from '../../types';
 
 type Tab = 'visit' | 'brewery' | 'admins';
 
 interface Props {
   onClose: () => void;
-  onDataChange: () => void;
+  onDataChange: (opts?: DataChangeOptions) => void;
 }
 
 export default function AdminPanel({ onClose, onDataChange }: Props) {

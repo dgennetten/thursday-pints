@@ -1,20 +1,20 @@
 import * as XLSX from 'xlsx';
 import { Visit } from '../types';
+import { getApiBase } from '../apiBase';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE = getApiBase();
 
 // Load visits from MySQL via PHP API
-export async function loadVisitsFromAPI(): Promise<Visit[] | null> {
-  try {
-    const base = API_BASE || '/api';
-    const response = await fetch(`${base}/visits.php?v=${Date.now()}`, { cache: 'no-store' });
-    if (!response.ok) return null;
-    const visits = await response.json() as Visit[];
-    return Array.isArray(visits) && visits.length > 0 ? visits : null;
-  } catch (error) {
-    console.error('Error loading visits from API:', error);
-    return null;
+export async function loadVisitsFromAPI(): Promise<Visit[]> {
+  const response = await fetch(`${API_BASE}/visits.php?v=${Date.now()}`, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error(`Failed to load visits (${response.status})`);
   }
+  const visits = await response.json() as Visit[];
+  if (!Array.isArray(visits)) {
+    throw new Error('Invalid visits response');
+  }
+  return visits;
 }
 
 // OneDrive sharing link - convert to direct download link
@@ -237,59 +237,6 @@ export async function fetchSpreadsheetData(): Promise<Visit[]> {
   const errorMessage = `All methods failed to fetch spreadsheet:\n${errors.join('\n')}`;
   console.error(errorMessage);
   throw new Error(`Unable to access OneDrive file. This may be due to CORS restrictions or authentication requirements. Please check the browser console for details.`);
-}
-
-// Save visits to JSON file (for caching)
-export function saveVisitsToJSON(visits: Visit[]): void {
-  try {
-    const json = JSON.stringify(visits, null, 2);
-    localStorage.setItem('thursday-pints-visits', json);
-    localStorage.setItem('thursday-pints-visits-timestamp', new Date().toISOString());
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
-  }
-}
-
-// Load visits from JSON cache (localStorage)
-export function loadVisitsFromJSON(): Visit[] | null {
-  try {
-    const json = localStorage.getItem('thursday-pints-visits');
-    if (!json) return null;
-    
-    const visits = JSON.parse(json) as Visit[];
-    return visits;
-  } catch (error) {
-    console.error('Error loading from localStorage:', error);
-    return null;
-  }
-}
-
-// Load visits from public/data.json file (fallback)
-export async function loadVisitsFromPublicJSON(): Promise<Visit[] | null> {
-  try {
-    // Add cache-busting query parameter and disable cache
-    const timestamp = new Date().getTime();
-    const response = await fetch(`/data.json?v=${timestamp}`, {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
-    });
-    if (!response.ok) return null;
-    
-    const visits = await response.json() as Visit[];
-    return Array.isArray(visits) && visits.length > 0 ? visits : null;
-  } catch (error) {
-    console.error('Error loading from public/data.json:', error);
-    return null;
-  }
-}
-
-// Get last update timestamp
-export function getLastUpdateTimestamp(): string | null {
-  return localStorage.getItem('thursday-pints-visits-timestamp');
 }
 
 // Parse Excel file from File object (for manual upload)

@@ -1,18 +1,25 @@
 import type { VisitPhoto } from '../types'
+import { getApiBase } from '../apiBase'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || ''
+const API_BASE = getApiBase()
+
+const noStore: RequestInit = { cache: 'no-store' }
 
 export async function fetchPhotoAvailability(): Promise<string[]> {
-  const res = await fetch(`${API_BASE}/photos.php`)
+  const res = await fetch(`${API_BASE}/photos.php?v=${Date.now()}`, noStore)
   if (!res.ok) return []
   const data = await res.json() as { dates?: string[] }
   return data.dates ?? []
 }
 
 export async function fetchVisitPhotos(date: string, token: string): Promise<VisitPhoto[]> {
-  const res = await fetch(`${API_BASE}/admin/photos.php?date=${encodeURIComponent(date)}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const res = await fetch(
+    `${API_BASE}/admin/photos.php?date=${encodeURIComponent(date)}&v=${Date.now()}`,
+    {
+      ...noStore,
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  )
   if (!res.ok) {
     const data = await res.json().catch(() => ({})) as { error?: string }
     throw new Error(data.error ?? `HTTP ${res.status}`)

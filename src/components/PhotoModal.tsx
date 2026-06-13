@@ -13,6 +13,7 @@ interface Props {
   dates: string[]
   breweryName: string
   token: string
+  refreshKey?: number
   onClose: () => void
 }
 
@@ -32,7 +33,7 @@ function DateSeparatorBar({ date }: { date: string }) {
   )
 }
 
-export default function PhotoModal({ dates, breweryName, token, onClose }: Props) {
+export default function PhotoModal({ dates, breweryName, token, refreshKey = 0, onClose }: Props) {
   const isMultiVisit = dates.length > 1
 
   const [photos, setPhotos] = useState<VisitPhoto[]>([])
@@ -70,7 +71,7 @@ export default function PhotoModal({ dates, breweryName, token, onClose }: Props
         setFetchError(err instanceof Error ? err.message : 'Failed to load photos'),
       )
       .finally(() => setLoading(false))
-  }, [dates, token, isMultiVisit])
+  }, [dates, token, isMultiVisit, refreshKey])
 
   const prev = useCallback(() => setIdx(i => Math.max(0, i - 1)), [])
   const next = useCallback(

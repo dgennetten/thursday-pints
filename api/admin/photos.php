@@ -19,6 +19,7 @@ const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
 
 // ---- GET: list photos for a visit (member + admin) ----
 if ($method === 'GET') {
+    header('Cache-Control: no-store');
     requireAuth($pdo, ['admin', 'superadmin', 'member']);
 
     $date = trim($_GET['date'] ?? '');

@@ -1,6 +1,7 @@
 import { Admin, AdminVisit, AddVisitPayload, AddBreweryPayload, UpdateVisitPayload, Birthday, Member } from '../types';
+import { getApiBase } from '../apiBase';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE = getApiBase();
 
 class AdminApiError extends Error {
   constructor(public status: number, message: string) {
@@ -137,8 +138,7 @@ export async function fetchMembers(token: string): Promise<Member[]> {
 
 export async function fetchBirthdays(from: string, to: string): Promise<Birthday[]> {
   try {
-    const base = API_BASE || '/api';
-    const res = await fetch(`${base}/birthdays.php?from=${from}&to=${to}`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE}/birthdays.php?from=${from}&to=${to}`, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = await res.json();
     return (data.birthdays as Birthday[]) ?? [];

@@ -3,12 +3,12 @@ import { CheckCircle, ChevronLeft, ChevronRight, Loader2, Camera, X } from 'luci
 import { addVisit, getVisits, updateVisit } from '../../services/adminService';
 import { fetchVisitPhotos, uploadVisitPhoto, deleteVisitPhoto } from '../../services/photoService';
 import { getUpcomingThursday } from '../../utils';
-import type { AdminVisit, VisitPhoto } from '../../types';
+import type { AdminVisit, DataChangeOptions, VisitPhoto } from '../../types';
 
 interface Props {
   token: string;
   breweryNames: string[];
-  onSuccess: () => void;
+  onSuccess: (opts?: DataChangeOptions) => void;
 }
 
 export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) {
@@ -134,7 +134,7 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
     try {
       const photo = await uploadVisitPhoto(date, visits[currentIdx].breweryName, file, token);
       setPhotos(prev => [...prev, photo]);
-      onSuccess();
+      onSuccess({ photoDate: date });
     } catch (err) {
       setPhotoError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -148,6 +148,7 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
     try {
       await deleteVisitPhoto(id, token);
       setPhotos(prev => prev.filter(p => p.id !== id));
+      onSuccess();
     } catch (err) {
       setPhotoError(err instanceof Error ? err.message : 'Delete failed');
     }
