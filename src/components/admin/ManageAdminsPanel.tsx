@@ -24,6 +24,7 @@ export default function ManageAdminsPanel({ token }: Props) {
   const [birthDay, setBirthDay]     = useState<number | ''>('');
   const [adding, setAdding]         = useState(false);
   const [addError, setAddError]     = useState('');
+  const [addSuccess, setAddSuccess] = useState('');
   const [copied, setCopied]         = useState(false);
 
   const load = useCallback(async () => {
@@ -49,9 +50,10 @@ export default function ManageAdminsPanel({ token }: Props) {
   async function handleAdd(e: FormEvent) {
     e.preventDefault();
     setAddError('');
+    setAddSuccess('');
     setAdding(true);
     try {
-      await addAdmin(
+      const result = await addAdmin(
         token,
         newEmail.trim(),
         newRole,
@@ -60,6 +62,16 @@ export default function ManageAdminsPanel({ token }: Props) {
         birthMonth !== '' ? birthMonth : undefined,
         birthDay   !== '' ? birthDay   : undefined,
       );
+      const addedEmail = newEmail.trim();
+      if (newRole === 'member') {
+        if (result.welcomeEmailSent) {
+          setAddSuccess(`Member added. Welcome email sent to ${addedEmail} (you were CC'd).`);
+        } else {
+          setAddSuccess(`Member added, but the welcome email could not be sent to ${addedEmail}.`);
+        }
+      } else {
+        setAddSuccess(`${newRole.charAt(0).toUpperCase()}${newRole.slice(1)} added.`);
+      }
       setNewEmail('');
       setNewRole(isSuperadmin ? 'admin' : 'member');
       setFirstName('');
@@ -244,6 +256,7 @@ export default function ManageAdminsPanel({ token }: Props) {
           </button>
         </div>
         {addError && <p className="text-sm text-red-600">{addError}</p>}
+        {addSuccess && <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{addSuccess}</p>}
       </form>
     </div>
   );

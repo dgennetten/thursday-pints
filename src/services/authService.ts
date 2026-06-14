@@ -19,10 +19,23 @@ export interface AuthAdmin {
   error?: string
 }
 
+export interface AdminContact {
+  id: number;
+  email: string;
+  first_name?: string | null;
+  last_name?: string | null;
+}
+
 export interface OtpRequestResult {
   ok: boolean;
   notMember?: boolean;
-  admins?: string[];
+  admins?: AdminContact[];
+}
+
+export interface MembershipRequestResult {
+  ok: boolean;
+  adminName?: string;
+  error?: string;
 }
 
 export async function requestOtp(email: string): Promise<OtpRequestResult> {
@@ -33,6 +46,28 @@ export async function requestOtp(email: string): Promise<OtpRequestResult> {
   })
   if (!res.ok) throw new Error('Request failed')
   return await res.json() as OtpRequestResult
+}
+
+export async function requestMembership(
+  email: string,
+  adminId: number,
+  birthMonth?: number,
+  birthDay?: number,
+): Promise<MembershipRequestResult> {
+  const body: Record<string, unknown> = { email, adminId };
+  if (birthMonth !== undefined) body.birthMonth = birthMonth;
+  if (birthDay !== undefined) body.birthDay = birthDay;
+
+  const res = await fetch(`${AUTH_BASE}/request-membership.php`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json() as MembershipRequestResult;
+  if (!res.ok || !data.ok) {
+    throw new Error(data.error ?? 'Request failed');
+  }
+  return data;
 }
 
 export async function verifyOtp(email: string, code: string, remember: boolean): Promise<AuthAdmin> {

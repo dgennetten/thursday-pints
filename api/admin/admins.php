@@ -71,7 +71,13 @@ try {
         );
         $stmt->execute([$email, $firstName, $lastName, $role, $me['id'], $birthMonth, $birthDay]);
 
-        echo json_encode(['ok' => true, 'id' => (int)$pdo->lastInsertId()]);
+        $newId = (int)$pdo->lastInsertId();
+        $response = ['ok' => true, 'id' => $newId];
+        if ($role === 'member') {
+            $response['welcomeEmailSent'] = sendWelcomeMemberEmail($pdo, $email, $firstName, $me['email']);
+        }
+
+        echo json_encode($response);
         exit;
     }
 

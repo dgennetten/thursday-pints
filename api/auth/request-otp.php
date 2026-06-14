@@ -28,10 +28,16 @@ $stmt->execute([$email]);
 if (!$stmt->fetch()) {
     // Email not in admins — return admin contact list so the UI can guide them
     $adminStmt = $pdo->query(
-        "SELECT email FROM admins WHERE role IN ('admin', 'superadmin') AND is_active = 1 ORDER BY role DESC, email ASC"
+        "SELECT id, email, first_name, last_name
+         FROM admins
+         WHERE role IN ('admin', 'superadmin') AND is_active = 1
+         ORDER BY role DESC, last_name ASC, first_name ASC, email ASC"
     );
-    $adminEmails = $adminStmt->fetchAll(PDO::FETCH_COLUMN);
-    jsonOut(['ok' => true, 'notMember' => true, 'admins' => $adminEmails]);
+    $admins = $adminStmt->fetchAll();
+    foreach ($admins as &$a) {
+        $a['id'] = (int)$a['id'];
+    }
+    jsonOut(['ok' => true, 'notMember' => true, 'admins' => $admins]);
 }
 
 // Invalidate existing codes and insert new one atomically

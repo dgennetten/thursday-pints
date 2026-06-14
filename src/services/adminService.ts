@@ -117,8 +117,8 @@ export async function addAdmin(
   lastName?: string,
   birthMonth?: number,
   birthDay?: number
-): Promise<void> {
-  await authFetch(token, `${API_BASE}/admin/admins.php`, {
+): Promise<{ welcomeEmailSent?: boolean }> {
+  const res = await authFetch(token, `${API_BASE}/admin/admins.php`, {
     method: 'POST',
     body: JSON.stringify({
       email,
@@ -128,6 +128,7 @@ export async function addAdmin(
       ...(birthMonth != null && birthDay != null ? { birth_month: birthMonth, birth_day: birthDay } : {}),
     }),
   });
+  return res.json();
 }
 
 export async function fetchMembers(token: string): Promise<Member[]> {
