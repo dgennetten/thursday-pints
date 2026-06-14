@@ -173,7 +173,7 @@ export default function BreweryList({
                           : 'View visit photos'
                       }
                     >
-                      <Camera className="w-4 h-4" />
+                      <Camera className="w-5 h-5" />
                       {(photoCountByBrewery?.get(brewery.name) ?? 0) > 1 && (
                         <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-0.5 flex items-center justify-center rounded-full bg-blue-600 text-white text-[10px] font-semibold leading-none">
                           {photoCountByBrewery?.get(brewery.name)}
