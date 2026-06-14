@@ -4,9 +4,10 @@ import { X } from 'lucide-react';
 interface WelcomePopupProps {
   version: string;
   onClose: () => void;
+  onRegisterClick: () => void;
 }
 
-export default function WelcomePopup({ version, onClose }: WelcomePopupProps) {
+export default function WelcomePopup({ version, onClose, onRegisterClick }: WelcomePopupProps) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const handleClose = () => {
@@ -38,7 +39,15 @@ export default function WelcomePopup({ version, onClose }: WelcomePopupProps) {
             dates, and places. Toggle <strong>Map</strong> to see pins; click a list row or pin to focus.
           </p>
           <p className="mt-2 text-sm text-gray-600">
-            Become a registered <strong>member</strong> to view photos.
+            Become a{' '}
+            <button
+              type="button"
+              onClick={onRegisterClick}
+              className="font-semibold text-blue-600 hover:underline"
+            >
+              registered member
+            </button>
+            {' '}to view photos.
           </p>
           <p className="mt-3 text-xs text-gray-500">
             v{version} ·{' '}

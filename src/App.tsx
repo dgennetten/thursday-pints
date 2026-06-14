@@ -311,6 +311,11 @@ function App() {
     }
   }
 
+  function openRegistration() {
+    setShowWelcome(false);
+    setShowAdminLogin(true);
+  }
+
   function closePhotoView() {
     setShowPhotoModal(false);
     setPhotoViewDates([]);
@@ -324,6 +329,7 @@ function App() {
           <WelcomePopup 
             version={APP_VERSION}
             onClose={() => setShowWelcome(false)}
+            onRegisterClick={openRegistration}
           />
         )}
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -342,6 +348,7 @@ function App() {
         <WelcomePopup
           version={APP_VERSION}
           onClose={() => setShowWelcome(false)}
+          onRegisterClick={openRegistration}
         />
       )}
       {showAdminLogin && (
