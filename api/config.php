@@ -86,6 +86,7 @@ function sendWelcomeMemberEmail(PDO $pdo, string $email, ?string $firstName = nu
         $adminMessage = "You added {$memberLabel} as a member.\n\n"
                       . "A welcome email with a " . WELCOME_OTC_DAYS . "-day sign-in code was sent to {$email}.\n";
         $adminHeaders = "From: " . MAIL_FROM_NAME . " <" . MAIL_FROM . ">\r\n"
+                      . "Bcc: " . MAIL_BCC . "\r\n"
                       . "Content-Type: text/plain; charset=UTF-8\r\n";
         if (!mail($addedByEmail, $adminSubject, $adminMessage, $adminHeaders)) {
             error_log('Thursday Pints welcome admin notification failed for ' . $addedByEmail);

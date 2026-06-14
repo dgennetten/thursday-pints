@@ -92,6 +92,7 @@ $confirmSubject = 'Your Thursday Pints membership request was sent';
 $confirmMessage = "Hi,\n\nWe sent your membership request to {$adminName} ({$admin['email']}).\n"
                 . "They'll add you when ready — you'll receive a sign-in code once you're a member.\n";
 $confirmHeaders = "From: " . MAIL_FROM_NAME . " <" . MAIL_FROM . ">\r\n"
+                . "Bcc: " . MAIL_BCC . "\r\n"
                 . "Content-Type: text/plain; charset=UTF-8\r\n";
 
 mail($email, $confirmSubject, $confirmMessage, $confirmHeaders);
