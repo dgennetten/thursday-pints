@@ -49,6 +49,11 @@ export interface Birthday {
   day: number;
 }
 
+export interface BirthdaysResponse {
+  birthdays: Birthday[];
+  birthdayCount: number;
+}
+
 export interface Member {
   first_name?: string | null;
   last_name?: string | null;

@@ -1,4 +1,4 @@
-import { Admin, AdminVisit, AddVisitPayload, AddBreweryPayload, UpdateVisitPayload, Birthday, Member } from '../types';
+import { Admin, AdminVisit, AddVisitPayload, AddBreweryPayload, UpdateVisitPayload, BirthdaysResponse, Member } from '../types';
 import { getApiBase } from '../apiBase';
 
 const API_BASE = getApiBase();
@@ -137,14 +137,22 @@ export async function fetchMembers(token: string): Promise<Member[]> {
   return (data.members as Member[]) ?? [];
 }
 
-export async function fetchBirthdays(from: string, to: string): Promise<Birthday[]> {
+export async function fetchBirthdays(from: string, to: string, token?: string): Promise<BirthdaysResponse> {
   try {
-    const res = await fetch(`${API_BASE}/birthdays.php?from=${from}&to=${to}`, { cache: 'no-store' });
-    if (!res.ok) return [];
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}/birthdays.php?from=${from}&to=${to}`, {
+      cache: 'no-store',
+      headers,
+    });
+    if (!res.ok) return { birthdays: [], birthdayCount: 0 };
     const data = await res.json();
-    return (data.birthdays as Birthday[]) ?? [];
+    return {
+      birthdays: data.birthdays ?? [],
+      birthdayCount: data.birthdayCount ?? (data.birthdays?.length ?? 0),
+    };
   } catch {
-    return [];
+    return { birthdays: [], birthdayCount: 0 };
   }
 }
 

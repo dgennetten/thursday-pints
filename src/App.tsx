@@ -41,6 +41,7 @@ function App() {
   const [showAdminPanel, setShowAdminPanel]   = useState(false);
   const [showMemberPanel, setShowMemberPanel] = useState(false);
   const [birthdays, setBirthdays]               = useState<Birthday[]>([]);
+  const [birthdayCount, setBirthdayCount]       = useState(0);
   const [photoVisitDates, setPhotoVisitDates]   = useState<Set<string>>(new Set());
   const [photoViewDates, setPhotoViewDates]     = useState<string[]>([]);
   const [photoViewBrewery, setPhotoViewBrewery] = useState<string | null>(null);
@@ -78,15 +79,6 @@ function App() {
 
       setVisits(publicVisits);
 
-      const latestWithNext = publicVisits
-        .filter(v => v.nextBrewery)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-      if (latestWithNext) {
-        fetchBirthdays(latestWithNext.date, getNextThursday(latestWithNext.date))
-          .then(setBirthdays)
-          .catch(() => {});
-      }
-
       const breweriesMap = new Map<string, { lat: number; lng: number; address: string; status: string }>();
       breweries.forEach(brewery => {
         breweriesMap.set(brewery.brewery_name, {
@@ -106,6 +98,34 @@ function App() {
       setLoading(false);
     }
   }, []);
+
+  const latestVisitWithNext = useMemo(
+    () => visits
+      .filter(v => v.nextBrewery)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0],
+    [visits],
+  );
+
+  useEffect(() => {
+    if (!latestVisitWithNext) {
+      setBirthdays([]);
+      setBirthdayCount(0);
+      return;
+    }
+    fetchBirthdays(
+      latestVisitWithNext.date,
+      getNextThursday(latestVisitWithNext.date),
+      user?.token,
+    )
+      .then(({ birthdays: bdays, birthdayCount: count }) => {
+        setBirthdays(bdays);
+        setBirthdayCount(count);
+      })
+      .catch(() => {
+        setBirthdays([]);
+        setBirthdayCount(0);
+      });
+  }, [latestVisitWithNext, user?.token]);
 
   const handleDataChange = useCallback((opts?: DataChangeOptions) => {
     if (opts?.photoDate) {
@@ -421,21 +441,16 @@ function App() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Next Brewery Card */}
-        {(() => {
-          // Find the latest visit with a nextBrewery field
-          const latestVisitWithNext = visits
-            .filter(v => v.nextBrewery)
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-          
-          return latestVisitWithNext ? (
+        {latestVisitWithNext && (
             <NextBreweryCard
               nextBrewery={latestVisitWithNext.nextBrewery!}
               breweryStats={breweryStats}
               date={latestVisitWithNext.date}
               birthdays={birthdays}
+              birthdayCount={birthdayCount}
+              showBirthdayDetails={!!user}
             />
-          ) : null;
-        })()}
+        )}
 
         {loadError && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-6">

@@ -12,15 +12,25 @@ interface NextBreweryCardProps {
   breweryStats: BreweryStats[];
   date: string;
   birthdays?: Birthday[];
+  birthdayCount?: number;
+  showBirthdayDetails?: boolean;
 }
 
-export default function NextBreweryCard({ nextBrewery, breweryStats, date, birthdays = [] }: NextBreweryCardProps) {
+export default function NextBreweryCard({
+  nextBrewery,
+  breweryStats,
+  date,
+  birthdays = [],
+  birthdayCount = 0,
+  showBirthdayDetails = false,
+}: NextBreweryCardProps) {
   const matchingBrewery = breweryStats.find(
     brewery => brewery.name.toLowerCase() === nextBrewery.toLowerCase().trim()
   );
 
   const isLimerick = !matchingBrewery;
   const nextThursdayDate = getNextThursday(date);
+  const hasBirthdays = birthdayCount > 0;
 
   return (
     <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-6 shadow-lg">
@@ -53,16 +63,22 @@ export default function NextBreweryCard({ nextBrewery, breweryStats, date, birth
         </div>
       )}
 
-      {birthdays.length > 0 && (
+      {hasBirthdays && (
         <div className="mt-4 pt-3 border-t border-blue-200">
           <p className="text-sm text-blue-800">
             🎂 <span className="font-semibold">Birthday shoutout:</span>{' '}
-            {birthdays.map((b, i) => (
-              <span key={i}>
-                {i > 0 && ' • '}
-                {b.name} <span className="text-blue-600">({MONTH_NAMES[b.month - 1]} {b.day})</span>
+            {showBirthdayDetails ? (
+              birthdays.map((b, i) => (
+                <span key={i}>
+                  {i > 0 && ' • '}
+                  {b.name} <span className="text-blue-600">({MONTH_NAMES[b.month - 1]} {b.day})</span>
+                </span>
+              ))
+            ) : (
+              <span className="text-blue-700">
+                Sign in as a member to see who&apos;s celebrating this week.
               </span>
-            ))}
+            )}
           </p>
         </div>
       )}

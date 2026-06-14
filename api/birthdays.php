@@ -1,9 +1,17 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: https://thursdaypints.com');
+header('Access-Control-Allow-Headers: Authorization, Content-Type');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Cache-Control: no-store');
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/admin/auth.php';
 
 $from = $_GET['from'] ?? null;
 $to   = $_GET['to']   ?? null;
@@ -36,7 +44,6 @@ try {
 
         if (!checkdate($month, $day, 2000)) continue;
 
-        // Check birthday in from-year and from-year+1 to handle year-end windows
         foreach ([$fromYear, $fromYear + 1] as $year) {
             $bday = DateTimeImmutable::createFromFormat('Y-n-j', "$year-$month-$day");
             if ($bday && $bday >= $fromDt && $bday <= $toDt) {
@@ -52,7 +59,12 @@ try {
         }
     }
 
-    echo json_encode(['birthdays' => $birthdays], JSON_UNESCAPED_UNICODE);
+    $viewer = getAuthenticatedAdmin($pdo, ['member', 'admin', 'superadmin']);
+    if ($viewer) {
+        echo json_encode(['birthdays' => $birthdays, 'birthdayCount' => count($birthdays)], JSON_UNESCAPED_UNICODE);
+    } else {
+        echo json_encode(['birthdays' => [], 'birthdayCount' => count($birthdays)], JSON_UNESCAPED_UNICODE);
+    }
 
 } catch (Exception $e) {
     http_response_code(500);
