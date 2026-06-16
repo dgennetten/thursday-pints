@@ -105,7 +105,7 @@ export async function getBreweryNames(token: string): Promise<string[]> {
 }
 
 export async function getAdmins(token: string): Promise<Admin[]> {
-  const res = await authFetch(token, `${API_BASE}/admin/admins.php`);
+  const res = await authFetch(token, `${API_BASE}/admin/admins.php`, { cache: 'no-store' });
   return res.json();
 }
 
@@ -132,7 +132,7 @@ export async function addAdmin(
 }
 
 export async function fetchMembers(token: string): Promise<Member[]> {
-  const res = await authFetch(token, `${API_BASE}/members.php`);
+  const res = await authFetch(token, `${API_BASE}/members.php`, { cache: 'no-store' });
   const data = await res.json();
   return (data.members as Member[]) ?? [];
 }
