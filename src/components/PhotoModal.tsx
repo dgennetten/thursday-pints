@@ -78,7 +78,7 @@ function FullscreenPhoto({ src, alt, className = 'max-w-full object-contain roun
       <button
         type="button"
         onClick={toggleFullscreen}
-        className="absolute bottom-2 right-2 p-2 bg-black bg-opacity-50 hover:bg-opacity-80 rounded text-white transition"
+        className="absolute bottom-2 right-2 p-2 bg-black bg-opacity-50 hover:bg-opacity-80 rounded text-white transition hidden md:block"
         aria-label={isFullscreen ? 'Exit fullscreen' : 'View fullscreen'}
       >
         {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
