@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { X, ChevronLeft, ChevronRight, Loader2, Maximize2, Minimize2 } from 'lucide-react'
 import { fetchVisitPhotos } from '../services/photoService'
 import { formatDate } from '../utils'
 import type { VisitPhoto } from '../types'
@@ -29,6 +29,60 @@ function DateSeparatorBar({ date }: { date: string }) {
         {formatDate(date)}
       </span>
       <div className="flex-1 h-px bg-gray-500" />
+    </div>
+  )
+}
+
+interface FullscreenPhotoProps {
+  src: string
+  alt: string
+  className?: string
+}
+
+function FullscreenPhoto({ src, alt, className = 'max-w-full object-contain rounded' }: FullscreenPhotoProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  useEffect(() => {
+    function onFullscreenChange() {
+      setIsFullscreen(document.fullscreenElement === containerRef.current)
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
+  }, [])
+
+  async function toggleFullscreen(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!containerRef.current) return
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen()
+      } else {
+        await containerRef.current.requestFullscreen()
+      }
+    } catch {
+      // fullscreen not supported or denied
+    }
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative inline-flex items-center justify-center bg-black max-w-full [&:fullscreen]:w-screen [&:fullscreen]:h-screen"
+    >
+      <img
+        src={src}
+        alt={alt}
+        className={isFullscreen ? 'max-h-screen max-w-screen object-contain' : className}
+      />
+      <button
+        type="button"
+        onClick={toggleFullscreen}
+        className="absolute bottom-2 right-2 p-2 bg-black bg-opacity-50 hover:bg-opacity-80 rounded text-white transition"
+        aria-label={isFullscreen ? 'Exit fullscreen' : 'View fullscreen'}
+      >
+        {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+      </button>
     </div>
   )
 }
@@ -128,11 +182,10 @@ export default function PhotoModal({ dates, breweryName, token, refreshKey = 0, 
                   <DateSeparatorBar date={group.date} />
                   <div className="flex flex-col items-center gap-4 px-4 py-4">
                     {group.photos.map(photo => (
-                      <img
+                      <FullscreenPhoto
                         key={photo.id}
                         src={photo.url}
                         alt={`${breweryName} visit on ${formatDate(group.date)}`}
-                        className="max-w-full object-contain rounded"
                       />
                     ))}
                   </div>
@@ -151,7 +204,7 @@ export default function PhotoModal({ dates, breweryName, token, refreshKey = 0, 
                 <p className="text-gray-400 text-sm">No photos available.</p>
               ) : (
                 <>
-                  <img
+                  <FullscreenPhoto
                     key={photos[idx].id}
                     src={photos[idx].url}
                     alt={`${breweryName} visit photo ${idx + 1}`}
