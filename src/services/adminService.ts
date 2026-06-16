@@ -156,14 +156,26 @@ export async function fetchBirthdays(from: string, to: string, token?: string): 
   }
 }
 
-export async function updateAdminRole(
+export async function updateMemberInfo(
   token: string,
   id: number,
-  role: 'admin' | 'superadmin'
+  email: string,
+  firstName?: string,
+  lastName?: string,
+  birthMonth?: number,
+  birthDay?: number,
+  role?: 'admin' | 'superadmin' | 'member'
 ): Promise<void> {
   await authFetch(token, `${API_BASE}/admin/admins.php`, {
-    method: 'PATCH',
-    body: JSON.stringify({ id, role }),
+    method: 'PUT',
+    body: JSON.stringify({
+      id,
+      email,
+      first_name: firstName ?? '',
+      last_name: lastName ?? '',
+      ...(birthMonth != null && birthDay != null ? { birth_month: birthMonth, birth_day: birthDay } : {}),
+      ...(role ? { role } : {}),
+    }),
   });
 }
 

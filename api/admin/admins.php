@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: https://thursdaypints.com');
 header('Access-Control-Allow-Headers: Authorization, Content-Type');
-header('Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -78,6 +78,78 @@ try {
         }
 
         echo json_encode($response);
+        exit;
+    }
+
+    // PUT — update user profile (admin: members only; superadmin: any user)
+    if ($method === 'PUT') {
+        $me   = requireAuth($pdo, ['admin', 'superadmin']);
+        $body = json_decode(file_get_contents('php://input'), true);
+
+        $id = (int)($body['id'] ?? 0);
+        if ($id <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Valid id required']);
+            exit;
+        }
+
+        $stmt = $pdo->prepare('SELECT id, email, role, is_active FROM admins WHERE id = ?');
+        $stmt->execute([$id]);
+        $target = $stmt->fetch();
+
+        if (!$target || !(bool)$target['is_active']) {
+            http_response_code(404);
+            echo json_encode(['error' => 'User not found']);
+            exit;
+        }
+
+        if ($me['role'] === 'admin' && $target['role'] !== 'member') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Can only edit members']);
+            exit;
+        }
+
+        $email = isset($body['email']) ? trim((string)$body['email']) : (string)$target['email'];
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Valid email required']);
+            exit;
+        }
+
+        $firstName  = isset($body['first_name']) ? trim((string)$body['first_name']) : null;
+        $lastName   = isset($body['last_name'])  ? trim((string)$body['last_name'])  : null;
+        if ($firstName === '') $firstName = null;
+        if ($lastName  === '') $lastName  = null;
+
+        $birthMonth = isset($body['birth_month']) && $body['birth_month'] !== '' && $body['birth_month'] !== null
+            ? (int)$body['birth_month'] : null;
+        $birthDay   = isset($body['birth_day'])   && $body['birth_day']   !== '' && $body['birth_day']   !== null
+            ? (int)$body['birth_day']   : null;
+        if ($birthMonth !== null && ($birthMonth < 1 || $birthMonth > 12)) $birthMonth = null;
+        if ($birthDay   !== null && ($birthDay   < 1 || $birthDay   > 31)) $birthDay   = null;
+        if ($birthMonth === null || $birthDay === null) { $birthMonth = null; $birthDay = null; }
+
+        $role = (string)$target['role'];
+        if ($me['role'] === 'superadmin' && isset($body['role'])) {
+            $newRole = trim((string)$body['role']);
+            if (!in_array($newRole, ['admin', 'superadmin', 'member'], true)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Valid role required']);
+                exit;
+            }
+            if ($id === (int)$me['id']) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Cannot change your own role']);
+                exit;
+            }
+            $role = $newRole;
+        }
+
+        $pdo->prepare(
+            'UPDATE admins SET email = ?, first_name = ?, last_name = ?, birth_month = ?, birth_day = ?, role = ? WHERE id = ?'
+        )->execute([$email, $firstName, $lastName, $birthMonth, $birthDay, $role, $id]);
+
+        echo json_encode(['ok' => true]);
         exit;
     }
 

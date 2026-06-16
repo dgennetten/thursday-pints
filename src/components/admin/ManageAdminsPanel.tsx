@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, FormEvent } from 'react';
-import { Trash2, ShieldCheck, Shield, Copy, Check, Cake } from 'lucide-react';
+import { Trash2, Copy, Check, Cake, Pencil } from 'lucide-react';
 import { Admin } from '../../types';
-import { getAdmins, addAdmin, updateAdminRole, deleteAdmin } from '../../services/adminService';
+import { getAdmins, addAdmin, deleteAdmin, updateMemberInfo } from '../../services/adminService';
 import { useAuth } from '../../contexts/AuthContext';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -26,6 +26,15 @@ export default function ManageAdminsPanel({ token }: Props) {
   const [addError, setAddError]     = useState('');
   const [addSuccess, setAddSuccess] = useState('');
   const [copied, setCopied]         = useState(false);
+  const [editingId, setEditingId]   = useState<number | null>(null);
+  const [editEmail, setEditEmail]   = useState('');
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName]   = useState('');
+  const [editBirthMonth, setEditBirthMonth] = useState<number | ''>('');
+  const [editBirthDay, setEditBirthDay]     = useState<number | ''>('');
+  const [editRole, setEditRole]             = useState<'admin' | 'superadmin' | 'member'>('member');
+  const [saving, setSaving]         = useState(false);
+  const [editError, setEditError]   = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -86,16 +95,6 @@ export default function ManageAdminsPanel({ token }: Props) {
     }
   }
 
-  async function handleRoleToggle(admin: Admin) {
-    const newR = admin.role === 'superadmin' ? 'admin' : 'superadmin';
-    try {
-      await updateAdminRole(token, admin.id, newR);
-      await load();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update role');
-    }
-  }
-
   async function handleDelete(admin: Admin) {
     if (!confirm(`Remove ${admin.email}?`)) return;
     try {
@@ -112,6 +111,54 @@ export default function ManageAdminsPanel({ token }: Props) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });
+  }
+
+  function canEditProfile(admin: Admin): boolean {
+    if (!admin.is_active) return false;
+    return isSuperadmin || admin.role === 'member';
+  }
+
+  function startEdit(admin: Admin) {
+    setEditingId(admin.id);
+    setEditEmail(admin.email);
+    setEditFirstName(admin.first_name ?? '');
+    setEditLastName(admin.last_name ?? '');
+    setEditBirthMonth(admin.birth_month ?? '');
+    setEditBirthDay(admin.birth_day ?? '');
+    setEditRole(admin.role);
+    setEditError('');
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditError('');
+  }
+
+  async function handleSaveEdit(e: FormEvent) {
+    e.preventDefault();
+    if (editingId == null) return;
+    setEditError('');
+    setSaving(true);
+    try {
+      const editingAdmin = admins.find(a => a.id === editingId);
+      const isEditingSelf = editingAdmin?.email === user?.email;
+      await updateMemberInfo(
+        token,
+        editingId,
+        editEmail.trim(),
+        editFirstName.trim() || undefined,
+        editLastName.trim()  || undefined,
+        editBirthMonth !== '' ? editBirthMonth : undefined,
+        editBirthDay   !== '' ? editBirthDay   : undefined,
+        isSuperadmin && !isEditingSelf ? editRole : undefined,
+      );
+      setEditingId(null);
+      await load();
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : 'Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (loading) return <p className="text-sm text-gray-500">Loading users…</p>;
@@ -134,8 +181,89 @@ export default function ManageAdminsPanel({ token }: Props) {
       <div className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden">
         {admins.map(admin => {
           const isMe = admin.email === user?.email;
-          const canModify = isSuperadmin && !isMe && admin.is_active;
+          const canDelete = isSuperadmin && !isMe && admin.is_active;
+          const canEdit = canEditProfile(admin);
           const hasBirthday = admin.birth_month != null && admin.birth_day != null;
+          const isEditing = editingId === admin.id;
+
+          if (isEditing) {
+            return (
+              <form key={admin.id} onSubmit={handleSaveEdit} className="px-3 py-3 bg-blue-50 space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={editFirstName}
+                    onChange={e => setEditFirstName(e.target.value)}
+                    placeholder="First name"
+                    className="flex-1 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="text"
+                    value={editLastName}
+                    onChange={e => setEditLastName(e.target.value)}
+                    placeholder="Last name"
+                    className="flex-1 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <input
+                  type="email"
+                  required
+                  value={editEmail}
+                  onChange={e => setEditEmail(e.target.value)}
+                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="flex gap-2">
+                  <select
+                    value={editBirthMonth}
+                    onChange={e => setEditBirthMonth(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="flex-1 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Birth month</option>
+                    {MONTHS.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
+                  </select>
+                  <select
+                    value={editBirthDay}
+                    onChange={e => setEditBirthDay(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="w-20 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Day</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+                {isSuperadmin && !isMe && (
+                  <select
+                    value={editRole}
+                    onChange={e => setEditRole(e.target.value as 'admin' | 'superadmin' | 'member')}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                    <option value="superadmin">Superadmin</option>
+                  </select>
+                )}
+                {editError && <p className="text-xs text-red-600">{editError}</p>}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="flex-1 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="flex-1 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  >
+                    {saving ? 'Saving…' : 'Save'}
+                  </button>
+                </div>
+              </form>
+            );
+          }
+
           return (
             <div key={admin.id} className={`flex items-center gap-3 px-3 py-2.5 ${!admin.is_active ? 'opacity-40' : ''}`}>
               <div className="flex-1 min-w-0">
@@ -155,18 +283,17 @@ export default function ManageAdminsPanel({ token }: Props) {
                   )}
                 </p>
               </div>
-              {canModify && (
-                <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1 shrink-0">
+                {canEdit && (
                   <button
-                    onClick={() => handleRoleToggle(admin)}
-                    title={admin.role === 'superadmin' ? 'Demote to admin' : 'Promote to superadmin'}
+                    onClick={() => startEdit(admin)}
+                    title="Edit user info"
                     className="p-1.5 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                   >
-                    {admin.role === 'superadmin'
-                      ? <Shield className="w-4 h-4" />
-                      : <ShieldCheck className="w-4 h-4" />
-                    }
+                    <Pencil className="w-4 h-4" />
                   </button>
+                )}
+                {canDelete && (
                   <button
                     onClick={() => handleDelete(admin)}
                     title="Remove user"
@@ -174,8 +301,8 @@ export default function ManageAdminsPanel({ token }: Props) {
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           );
         })}
