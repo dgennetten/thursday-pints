@@ -28,7 +28,7 @@ function App() {
   const { user, logout } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('tour');
   const [visits, setVisits] = useState<Visit[]>([]);
-  const [breweriesData, setBreweriesData] = useState<Map<string, { lat: number; lng: number; address: string; status: string }>>(new Map() as Map<string, { lat: number; lng: number; address: string; status: string }>);
+  const [breweriesData, setBreweriesData] = useState<Map<string, { lat: number; lng: number; address: string; status: string; website_url?: string | null }>>(new Map());
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
@@ -79,13 +79,14 @@ function App() {
 
       setVisits(publicVisits);
 
-      const breweriesMap = new Map<string, { lat: number; lng: number; address: string; status: string }>();
+      const breweriesMap = new Map<string, { lat: number; lng: number; address: string; status: string; website_url?: string | null }>();
       breweries.forEach(brewery => {
         breweriesMap.set(brewery.brewery_name, {
           lat: brewery.latitude,
           lng: brewery.longitude,
           address: brewery.brewery_address,
-          status: brewery.status
+          status: brewery.status,
+          website_url: brewery.website_url ?? null,
         });
       });
       setBreweriesData(breweriesMap);
@@ -210,6 +211,7 @@ function App() {
         lat: locationData?.lat,
         lng: locationData?.lng,
         address: locationData?.address,
+        websiteUrl: locationData?.website_url ?? null,
         isClosed: locationData?.status === 'Closed' || brewery.isClosed
       } as BreweryWithLocation;
     });
@@ -550,6 +552,7 @@ function App() {
                     setFilteredBreweries={setFilteredBreweries}
                     photoCountByBrewery={breweryPhotoCounts}
                     onPhotoClick={handleBreweryPhotoClick}
+                    showWebsiteLinks={viewMode === 'breweries'}
                   />
                 )}
               </div>

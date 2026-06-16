@@ -45,11 +45,24 @@ try {
         exit;
     }
 
+    $websiteUrl = null;
+    if (isset($body['website_url']) && $body['website_url'] !== null && trim((string)$body['website_url']) !== '') {
+        $websiteUrl = trim((string)$body['website_url']);
+        if (!preg_match('/^https?:\/\//i', $websiteUrl)) {
+            $websiteUrl = 'https://' . $websiteUrl;
+        }
+        if (!filter_var($websiteUrl, FILTER_VALIDATE_URL)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid website URL']);
+            exit;
+        }
+    }
+
     $stmt = $pdo->prepare(
-        'INSERT INTO breweries (brewery_name, brewery_address, latitude, longitude, status)
-         VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO breweries (brewery_name, brewery_address, latitude, longitude, status, website_url)
+         VALUES (?, ?, ?, ?, ?, ?)'
     );
-    $stmt->execute([$name, $address, $latitude, $longitude, 'Open']);
+    $stmt->execute([$name, $address, $latitude, $longitude, 'Open', $websiteUrl]);
 
     echo json_encode(['ok' => true, 'id' => (int)$pdo->lastInsertId()]);
 

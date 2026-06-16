@@ -79,13 +79,14 @@ let brewUpdated  = 0;
 
 for (const b of breweries) {
   const [result] = await connection.execute(
-    `INSERT INTO breweries (brewery_name, brewery_address, latitude, longitude, status)
-     VALUES (?, ?, ?, ?, ?)
+    `INSERT INTO breweries (brewery_name, brewery_address, latitude, longitude, status, website_url)
+     VALUES (?, ?, ?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE
        brewery_address = VALUES(brewery_address),
        latitude        = VALUES(latitude),
        longitude       = VALUES(longitude),
        status          = VALUES(status),
+       website_url     = VALUES(website_url),
        updated_at      = NOW()`,
     [
       b.brewery_name,
@@ -93,6 +94,7 @@ for (const b of breweries) {
       b.latitude,
       b.longitude,
       b.status,
+      b.website_url ?? null,
     ]
   );
   if (result.affectedRows === 1) brewInserted++;

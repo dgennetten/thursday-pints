@@ -23,12 +23,14 @@ export interface BreweryLocation {
   latitude: number;
   longitude: number;
   status: string; // "Open" or "Closed"
+  website_url?: string | null;
 }
 
 export interface BreweryWithLocation extends BreweryStats {
   lat?: number;
   lng?: number;
   address?: string;
+  websiteUrl?: string | null;
 }
 
 export interface Admin {
@@ -80,6 +82,25 @@ export interface AddBreweryPayload {
   address: string;
   latitude: number;
   longitude: number;
+  website_url?: string;
+}
+
+export interface AdminBrewery {
+  id: number;
+  brewery_name: string;
+  brewery_address: string;
+  latitude: number;
+  longitude: number;
+  status: 'Open' | 'Closed';
+  website_url?: string | null;
+}
+
+export interface UpdateBreweryPayload {
+  status?: 'Open' | 'Closed';
+  brewery_address?: string;
+  latitude?: number;
+  longitude?: number;
+  website_url?: string | null;
 }
 
 export interface AdminVisit {

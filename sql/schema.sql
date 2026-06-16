@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS breweries (
   latitude         DECIMAL(10,7)         NOT NULL,
   longitude        DECIMAL(10,7)         NOT NULL,
   status           ENUM('Open','Closed') NOT NULL DEFAULT 'Open',
+  website_url      VARCHAR(500)          NULL,
   created_at       TIMESTAMP             NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at       TIMESTAMP             NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_brewery_name (brewery_name)

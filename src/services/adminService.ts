@@ -1,4 +1,4 @@
-import { Admin, AdminVisit, AddVisitPayload, AddBreweryPayload, UpdateVisitPayload, BirthdaysResponse, Member } from '../types';
+import { Admin, AdminVisit, AddVisitPayload, AddBreweryPayload, UpdateVisitPayload, BirthdaysResponse, Member, AdminBrewery, UpdateBreweryPayload } from '../types';
 import { getApiBase } from '../apiBase';
 
 const API_BASE = getApiBase();
@@ -94,7 +94,26 @@ export async function updateVisit(token: string, id: number, payload: UpdateVisi
 export async function addBrewery(token: string, payload: AddBreweryPayload): Promise<void> {
   await authFetch(token, `${API_BASE}/admin/add-brewery.php`, {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      ...(payload.website_url ? { website_url: payload.website_url } : {}),
+    }),
+  });
+}
+
+export async function getAdminBreweries(token: string): Promise<AdminBrewery[]> {
+  const res = await authFetch(token, `${API_BASE}/admin/breweries.php`, { cache: 'no-store' });
+  return res.json();
+}
+
+export async function updateBrewery(
+  token: string,
+  id: number,
+  payload: UpdateBreweryPayload
+): Promise<void> {
+  await authFetch(token, `${API_BASE}/admin/breweries.php`, {
+    method: 'PUT',
+    body: JSON.stringify({ id, ...payload }),
   });
 }
 

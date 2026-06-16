@@ -3,7 +3,7 @@ import { X, CalendarPlus, Beer, Users } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getBreweryNames } from '../../services/adminService';
 import AddVisitForm from './AddVisitForm';
-import AddBreweryForm from './AddBreweryForm';
+import ManageBreweriesPanel from './ManageBreweriesPanel';
 import ManageAdminsPanel from './ManageAdminsPanel';
 import type { DataChangeOptions } from '../../types';
 
@@ -31,7 +31,7 @@ export default function AdminPanel({ onClose, onDataChange }: Props) {
 
   const tabs: { id: Tab; label: string; icon: typeof CalendarPlus }[] = [
     { id: 'visit',   label: 'Tour Visits', icon: CalendarPlus },
-    { id: 'brewery', label: 'Add Brewery', icon: Beer },
+    { id: 'brewery', label: 'Breweries', icon: Beer },
     ...(user?.role === 'superadmin' || user?.role === 'admin'
       ? [{ id: 'admins' as Tab, label: 'Users', icon: Users }]
       : []),
@@ -94,12 +94,10 @@ export default function AdminPanel({ onClose, onDataChange }: Props) {
             />
           )}
           {tab === 'brewery' && user?.token && (
-            <AddBreweryForm
+            <ManageBreweriesPanel
               token={user.token}
-              breweryNames={breweryNames}
               onSuccess={() => {
                 onDataChange();
-                // Refresh brewery names list after adding a new one
                 getBreweryNames(user.token).then(setBreweryNames).catch(() => {});
               }}
             />

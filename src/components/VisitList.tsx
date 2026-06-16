@@ -187,7 +187,7 @@ export default function VisitList({
                         title="View photos"
                         aria-label="View visit photos"
                       >
-                        <Camera className="w-4 h-4" />
+                        <Camera className="w-5 h-5" />
                       </button>
                     )}
                   </div>

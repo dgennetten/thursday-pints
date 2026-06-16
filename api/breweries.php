@@ -12,7 +12,8 @@ try {
                 brewery_address,
                 latitude,
                 longitude,
-                status
+                status,
+                website_url
          FROM breweries
          ORDER BY brewery_name ASC'
     );
@@ -25,6 +26,7 @@ try {
             'latitude'        => (float)$row['latitude'],
             'longitude'       => (float)$row['longitude'],
             'status'          => $row['status'],
+            'website_url'     => $row['website_url'] !== null ? (string)$row['website_url'] : null,
         ];
     }
 

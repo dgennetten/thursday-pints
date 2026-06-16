@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { BreweryWithLocation } from '../types';
 import { formatDate } from '../utils';
-import { MapPin, Calendar, Search, X, ChevronsUpDown, Camera } from 'lucide-react';
+import { MapPin, Calendar, Search, X, ChevronsUpDown, Camera, ExternalLink } from 'lucide-react';
 import { handleBreweryListMouseLeave } from '../mapHover';
 
 interface BreweryListProps {
@@ -16,6 +16,7 @@ interface BreweryListProps {
   onPhotoClick?: (breweryName: string) => void;
   mapHoverEnabled?: boolean;
   onBreweryHover?: (name: string | null) => void;
+  showWebsiteLinks?: boolean;
 }
 
 export default function BreweryList({ 
@@ -30,6 +31,7 @@ export default function BreweryList({
   onPhotoClick,
   mapHoverEnabled = false,
   onBreweryHover,
+  showWebsiteLinks = false,
 }: BreweryListProps) {
   const [filterText, setFilterText] = useState('');
   const [isReversed, setIsReversed] = useState(false);
@@ -156,6 +158,19 @@ export default function BreweryList({
                   <h3 className="text-lg font-semibold text-gray-900">
                     {brewery.name}
                   </h3>
+                  {showWebsiteLinks && brewery.websiteUrl && (
+                    <a
+                      href={brewery.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="text-gray-400 hover:text-blue-600 transition-colors"
+                      title="Open brewery website"
+                      aria-label={`Open ${brewery.name} website`}
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
                   {brewery.isClosed && (
                     <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
                       Closed
