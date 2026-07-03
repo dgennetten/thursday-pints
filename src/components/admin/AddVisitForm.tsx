@@ -33,6 +33,27 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
   const [photoError, setPhotoError]   = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Photos staged on a new (unsaved) visit — uploaded once the visit is created.
+  const [stagedPhotos, setStagedPhotos] = useState<{ file: File; url: string }[]>([]);
+
+  function stagePhoto(file: File) {
+    setStagedPhotos(prev => [...prev, { file, url: URL.createObjectURL(file) }]);
+  }
+
+  function removeStagedPhoto(index: number) {
+    setStagedPhotos(prev => {
+      URL.revokeObjectURL(prev[index].url);
+      return prev.filter((_, i) => i !== index);
+    });
+  }
+
+  function clearStagedPhotos() {
+    setStagedPhotos(prev => {
+      prev.forEach(p => URL.revokeObjectURL(p.url));
+      return [];
+    });
+  }
+
   function populateForm(visit: AdminVisit) {
     setDate(visit.date);
     setBreweryName(visit.breweryName);
@@ -107,6 +128,7 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
     setSuccessMsg('');
     setPhotos([]);
     setPhotoError('');
+    clearStagedPhotos();
     if (idx === -1) {
       setCurrentIdx(-1);
       clearForm();
@@ -169,7 +191,20 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
 
       if (isNew) {
         const { id } = await addVisit(token, payload);
-        onSuccess();
+
+        // Upload any photos staged before the visit existed.
+        let uploadedAny = false;
+        for (const sp of stagedPhotos) {
+          try {
+            await uploadVisitPhoto(payload.date, payload.breweryName, sp.file, token);
+            uploadedAny = true;
+          } catch (err) {
+            setPhotoError(err instanceof Error ? err.message : 'Photo upload failed');
+          }
+        }
+        clearStagedPhotos();
+
+        onSuccess(uploadedAny ? { photoDate: payload.date } : undefined);
         setSuccessMsg('Visit added!');
         await loadAndPosition({ targetId: id });
       } else {
@@ -298,70 +333,97 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
         />
       </div>
 
-      {/* Photos — only for existing visits */}
-      {!isNew && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Camera className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Photos</span>
-          </div>
-
-          {photoLoading ? (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Loading…
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2 items-start">
-              {photos.map(photo => (
-                <div key={photo.id} className="relative group">
-                  <img
-                    src={photo.url}
-                    alt="Visit photo"
-                    className="w-20 h-20 object-cover rounded-lg border border-gray-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handlePhotoDelete(photo.id)}
-                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Remove photo"
-                    aria-label="Remove photo"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-
-              {/* Upload button */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="w-20 h-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-blue-400 hover:text-blue-500 disabled:opacity-50 transition-colors"
-                title="Upload photo"
-              >
-                {uploading
-                  ? <Loader2 className="w-5 h-5 animate-spin" />
-                  : <Camera className="w-5 h-5" />}
-                <span className="text-xs mt-1">{uploading ? 'Uploading' : 'Add'}</span>
-              </button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={e => {
-                  const file = e.target.files?.[0];
-                  if (file) void handlePhotoUpload(file);
-                }}
-              />
-            </div>
-          )}
-
-          {photoError && <p className="mt-2 text-sm text-red-600">{photoError}</p>}
+      {/* Photos */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <Camera className="w-4 h-4 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700">Photos</span>
         </div>
-      )}
+
+        {photoLoading ? (
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Loading…
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2 items-start">
+            {isNew
+              ? stagedPhotos.map((sp, i) => (
+                  <div key={i} className="relative group">
+                    <img
+                      src={sp.url}
+                      alt="Visit photo"
+                      className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeStagedPhoto(i)}
+                      className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Remove photo"
+                      aria-label="Remove photo"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))
+              : photos.map(photo => (
+                  <div key={photo.id} className="relative group">
+                    <img
+                      src={photo.url}
+                      alt="Visit photo"
+                      className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handlePhotoDelete(photo.id)}
+                      className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Remove photo"
+                      aria-label="Remove photo"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+
+            {/* Upload button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-20 h-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 hover:border-blue-400 hover:text-blue-500 disabled:opacity-50 transition-colors"
+              title="Upload photo"
+            >
+              {uploading
+                ? <Loader2 className="w-5 h-5 animate-spin" />
+                : <Camera className="w-5 h-5" />}
+              <span className="text-xs mt-1">{uploading ? 'Uploading' : 'Add'}</span>
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  if (isNew) stagePhoto(file);
+                  else void handlePhotoUpload(file);
+                }
+                if (fileInputRef.current) fileInputRef.current.value = '';
+              }}
+            />
+          </div>
+        )}
+
+        {isNew && stagedPhotos.length > 0 && (
+          <p className="mt-2 text-xs text-gray-400">
+            Photos will upload when you add the visit.
+          </p>
+        )}
+
+        {photoError && <p className="mt-2 text-sm text-red-600">{photoError}</p>}
+      </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
