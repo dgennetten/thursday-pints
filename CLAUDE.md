@@ -49,4 +49,4 @@ The canonical way is to edit `public/data.json` directly (append a new entry wit
 
 ### Deployment
 
-GitHub Actions (`.github/workflows/deploy.yml`) auto-deploys on push to main via FTP to Dreamhost. Secrets `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD` are set in the repo.
+Deploy manually with `npm run deploy` (`scripts/build-and-deploy.js`): it runs `npm run build` and uploads `dist/` (plus the `api/` PHP files) to Dreamhost via FTP. Requires a local, gitignored `.env.local` with `SFTP_HOST`, `SFTP_USERNAME`, `SFTP_PASSWORD`, and `FTP_REMOTE_PATH` (see `.env.local.example`). There is no push-to-deploy — pushing to `main` does not deploy.
