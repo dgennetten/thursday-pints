@@ -298,7 +298,7 @@ export default function AddVisitForm({ token, breweryNames, onSuccess }: Props) 
         />
         <datalist id="brewery-list">
           {breweryNames.map(name => (
-            <option key={name} value={name} />
+            <option key={name} value={name}>{name}</option>
           ))}
         </datalist>
       </div>
