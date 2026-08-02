@@ -43,6 +43,7 @@ export interface Admin {
   created_at: string;
   birth_month?: number | null;
   birth_day?: number | null;
+  last_login_at?: string | null;
 }
 
 export interface Birthday {

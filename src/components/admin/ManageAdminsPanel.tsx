@@ -1,10 +1,20 @@
 import { useState, useEffect, useCallback, FormEvent } from 'react';
-import { Trash2, Copy, Check, Cake, Pencil } from 'lucide-react';
+import { Trash2, Copy, Check, Cake, Pencil, LogIn } from 'lucide-react';
 import { Admin } from '../../types';
 import { getAdmins, addAdmin, deleteAdmin, updateMemberInfo } from '../../services/adminService';
 import { useAuth } from '../../contexts/AuthContext';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function formatLastLogin(value?: string | null): string | null {
+  if (!value) return null;
+  // MySQL DATETIME comes as "YYYY-MM-DD HH:MM:SS"; normalise for Safari.
+  const d = new Date(value.replace(' ', 'T'));
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleString(undefined, {
+    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+  });
+}
 
 interface Props {
   token: string;
@@ -184,6 +194,7 @@ export default function ManageAdminsPanel({ token }: Props) {
           const canDelete = isSuperadmin && !isMe && admin.is_active;
           const canEdit = canEditProfile(admin);
           const hasBirthday = admin.birth_month != null && admin.birth_day != null;
+          const lastLogin = formatLastLogin(admin.last_login_at);
           const isEditing = editingId === admin.id;
 
           if (isEditing) {
@@ -281,6 +292,10 @@ export default function ManageAdminsPanel({ token }: Props) {
                       {MONTHS[admin.birth_month! - 1]} {admin.birth_day}
                     </span>
                   )}
+                </p>
+                <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                  <LogIn className="w-3 h-3" />
+                  {lastLogin ? `Last login ${lastLogin}` : 'Never logged in'}
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">

@@ -55,6 +55,9 @@ $expiresAt = date('Y-m-d H:i:s', strtotime($remember ? '+365 days' : '+1 day'));
 
 $pdo->prepare('INSERT INTO auth_sessions (admin_id, token, expires_at) VALUES (?, ?, ?)')->execute([$admin['id'], $token, $expiresAt]);
 
+// Record this successful sign-in as the user's last login
+$pdo->prepare('UPDATE admins SET last_login_at = NOW() WHERE id = ?')->execute([$admin['id']]);
+
 // Occasional cleanup of expired / used OTP codes
 if (random_int(1, 20) === 1) {
     $pdo->prepare('DELETE FROM otp_codes WHERE expires_at < NOW() OR used = 1')->execute();

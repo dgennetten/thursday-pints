@@ -62,6 +62,9 @@ try {
          VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))'
     )->execute([$admin['id'], $token]);
 
+    // Record this successful sign-in as the user's last login
+    $pdo->prepare('UPDATE admins SET last_login_at = NOW() WHERE id = ?')->execute([$admin['id']]);
+
     echo json_encode([
         'token' => $token,
         'role'  => $admin['role'],

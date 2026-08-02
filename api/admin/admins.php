@@ -21,7 +21,7 @@ try {
     if ($method === 'GET') {
         $me = requireAuth($pdo, ['admin', 'superadmin']);
         $stmt = $pdo->query(
-            'SELECT id, email, first_name, last_name, role, is_active, created_at, birth_month, birth_day FROM admins ORDER BY created_at ASC'
+            'SELECT id, email, first_name, last_name, role, is_active, created_at, birth_month, birth_day, last_login_at FROM admins ORDER BY created_at ASC'
         );
         $admins = $stmt->fetchAll();
         foreach ($admins as &$a) {
