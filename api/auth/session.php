@@ -42,6 +42,15 @@ if ($expiresTs === false || $expiresTs < time()) {
     jsonOut(['success' => false, 'error' => 'Session expired'], 401);
 }
 
+// Count restoring a remembered session as a login, so admins who stay signed in
+// via a device token still get an accurate last_login_at. Throttle to at most once
+// an hour so this doesn't write on every app load.
+$pdo->prepare(
+    'UPDATE admins
+     SET last_login_at = NOW()
+     WHERE id = ? AND (last_login_at IS NULL OR last_login_at < NOW() - INTERVAL 1 HOUR)'
+)->execute([$row['id']]);
+
 jsonOut([
     'success'   => true,
     'token'     => $token,
