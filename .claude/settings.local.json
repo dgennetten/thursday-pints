@@ -8,7 +8,9 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:dev.to)",
       "Bash(npm run *)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "PowerShell(gh run list --workflow=deploy.yml --limit 3)",
+      "Bash(git rm *)"
     ]
   }
 }
